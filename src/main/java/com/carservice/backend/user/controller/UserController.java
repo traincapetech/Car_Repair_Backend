@@ -2,17 +2,22 @@ package com.carservice.backend.user.controller;
 
 import com.carservice.backend.common.response.ApiResponse;
 import com.carservice.backend.user.dto.CustomerRegistrationRequest;
-import com.carservice.backend.user.entity.User;
 import com.carservice.backend.user.service.UserService;
 import com.carservice.backend.user.dto.UserResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.carservice.backend.user.dto.LoginRequest;
+import com.carservice.backend.user.dto.LoginResponse;
+import com.carservice.backend.user.dto.RefreshTokenRequest;
+import com.carservice.backend.user.dto.TokenResponse;
 import jakarta.validation.Valid;
+import com.carservice.backend.user.entity.User;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -40,14 +45,34 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserResponse>> login(
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
             @Valid @RequestBody LoginRequest request) {
 
-        UserResponse user = userService.login(request);
+        LoginResponse loginResponse = userService.login(request);
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Login successful",
-                        user));
+                        loginResponse));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+
+        TokenResponse response =
+                userService.refreshToken(request);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Token refreshed successfully",
+                        response
+                )
+        );
+    }
+
+    
+
 }
