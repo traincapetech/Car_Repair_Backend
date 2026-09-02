@@ -1,5 +1,7 @@
 package com.carservice.backend.common.config;
 
+import com.carservice.backend.security.config.RestAccessDeniedHandler;
+import com.carservice.backend.security.config.RestAuthenticationEntryPoint;
 import com.carservice.backend.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,75 +11,64 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final RestAuthenticationEntryPoint authenticationEntryPoint;
+        private final RestAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter
-    ) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+        public SecurityConfig(
+                        JwtAuthenticationFilter jwtAuthenticationFilter,
+                        RestAuthenticationEntryPoint authenticationEntryPoint,
+                        RestAccessDeniedHandler accessDeniedHandler) {
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                this.authenticationEntryPoint = authenticationEntryPoint;
+                this.accessDeniedHandler = accessDeniedHandler;
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http) throws Exception {
 
-        return http
-                /*
-                 * REST API → CSRF disabled.
-                 */
-                .csrf(csrf -> csrf.disable())
+                return http
+        .csrf(csrf -> csrf.disable())
 
-                /*
-                 * We are using JWT instead of HTTP session.
-                 */
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+        .sessionManagement(session ->
+                session.sessionCreationPolicy(
+                        SessionCreationPolicy.STATELESS
                 )
+        )
 
-                /*
-                 * Disable browser-based authentication mechanisms.
-                 * We don't want login forms or HTTP Basic.
-                 */
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
+        .formLogin(form -> form.disable())
+        .httpBasic(basic -> basic.disable())
 
-                /*
-                 * Public endpoints.
-                 */
-                .authorizeHttpRequests(auth -> auth
+        .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+        )
 
-                        .requestMatchers(
-                                "/api/v1/health",
-                                "/api/v1/auth/**"
-                        ).permitAll()
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                        "/api/v1/health",
+                        "/api/v1/auth/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+        )
 
-                        /*
-                         * Everything else requires JWT authentication.
-                         */
-                        .anyRequest().authenticated()
-                )
+        .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+        )
 
-                /*
-                 * Run JWT authentication before Spring's
-                 * UsernamePasswordAuthenticationFilter.
-                 */
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                )
+        .build();
+        }
 
-                .build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 }

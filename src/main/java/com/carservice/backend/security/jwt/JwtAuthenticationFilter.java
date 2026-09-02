@@ -40,6 +40,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
+        System.out.println(
+        "JWT FILTER -> "
+                + request.getMethod()
+                + " "
+                + request.getRequestURI()
+                + " | Authorization: "
+                + (authHeader != null)
+);
 
         /*
          * No Authorization header.
@@ -112,6 +120,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder
                                 .getContext()
                                 .setAuthentication(authentication);
+                                System.out.println(
+        "JWT FILTER -> AUTHENTICATED USER: "
+                + user.getEmail()
+);
                     }
                 }
             }
@@ -126,7 +138,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
              * Spring Security will return 401 if the endpoint is protected.
              */
         }
-
+System.out.println(
+        "JWT FILTER -> FINAL AUTH: "
+                + SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+);
         filterChain.doFilter(request, response);
     }
 }

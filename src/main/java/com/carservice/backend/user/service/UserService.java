@@ -18,185 +18,189 @@ import com.carservice.backend.user.dto.AuthResponse;
 import com.carservice.backend.user.dto.LoginResponse;
 import com.carservice.backend.user.dto.RefreshTokenRequest;
 import com.carservice.backend.user.dto.TokenResponse;
+import com.carservice.backend.user.dto.UpdateProfileRequest;
 
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final RefreshTokenService refreshTokenService;
+        private final UserRepository userRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtService jwtService;
+        private final RefreshTokenService refreshTokenService;
 
-    public UserService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService,
-            RefreshTokenService refreshTokenService
-    ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.refreshTokenService = refreshTokenService;
-    }
-
-    public UserResponse registerCustomer(
-            CustomerRegistrationRequest request
-    ) {
-
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new UserAlreadyExistsException(
-                    "Email already registered"
-            );
+        public UserService(
+                        UserRepository userRepository,
+                        PasswordEncoder passwordEncoder,
+                        JwtService jwtService,
+                        RefreshTokenService refreshTokenService) {
+                this.userRepository = userRepository;
+                this.passwordEncoder = passwordEncoder;
+                this.jwtService = jwtService;
+                this.refreshTokenService = refreshTokenService;
         }
 
-        if (userRepository.existsByPhone(request.getPhone())) {
-            throw new UserAlreadyExistsException(
-                    "Phone number already registered"
-            );
+        public UserResponse registerCustomer(
+                        CustomerRegistrationRequest request) {
+
+                if (userRepository.existsByEmail(request.getEmail())) {
+                        throw new UserAlreadyExistsException(
+                                        "Email already registered");
+                }
+
+                if (userRepository.existsByPhone(request.getPhone())) {
+                        throw new UserAlreadyExistsException(
+                                        "Phone number already registered");
+                }
+
+                User user = new User();
+
+                user.setName(request.getName());
+                user.setEmail(request.getEmail());
+                user.setPhone(request.getPhone());
+
+                user.setPassword(
+                                passwordEncoder.encode(request.getPassword()));
+
+                user.setRole(UserRole.CUSTOMER);
+
+                User savedUser = userRepository.save(user);
+
+                return new UserResponse(
+                                savedUser.getId(),
+                                savedUser.getName(),
+                                savedUser.getEmail(),
+                                savedUser.getPhone(),
+                                savedUser.getRole(),
+                                savedUser.getIsActive(),
+                                savedUser.getCreatedAt());
         }
 
-        User user = new User();
+        public LoginResponse login(LoginRequest request) {
 
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
+                User user = userRepository
+                                .findByEmail(request.getEmail())
+                                .orElseThrow(() -> new InvalidCredentialsException(
+                                                "Invalid email or password"));
 
-        user.setPassword(
-                passwordEncoder.encode(request.getPassword())
-        );
+                if (!passwordEncoder.matches(
+                                request.getPassword(),
+                                user.getPassword())) {
+                        throw new InvalidCredentialsException(
+                                        "Invalid email or password");
+                }
 
-        user.setRole(UserRole.CUSTOMER);
+                if (!user.getIsActive()) {
+                        throw new InvalidCredentialsException(
+                                        "User account is inactive");
+                }
 
-        User savedUser = userRepository.save(user);
+                String accessToken = jwtService.generateAccessToken(user);
 
-        return new UserResponse(
-                savedUser.getId(),
-                savedUser.getName(),
-                savedUser.getEmail(),
-                savedUser.getPhone(),
-                savedUser.getRole(),
-                savedUser.getIsActive(),
-                savedUser.getCreatedAt()
-        );
-    }
+                String refreshToken = jwtService.generateRefreshToken(user);
 
+                refreshTokenService.saveRefreshToken(
+                                refreshToken,
+                                user,
+                                jwtService.getRefreshTokenExpiryDate());
 
-    public LoginResponse login(LoginRequest request) {
+                UserResponse userResponse = new UserResponse(
+                                user.getId(),
+                                user.getName(),
+                                user.getEmail(),
+                                user.getPhone(),
+                                user.getRole(),
+                                user.getIsActive(),
+                                user.getCreatedAt());
 
-        User user = userRepository
-                .findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new InvalidCredentialsException(
-                                "Invalid email or password"
-                        )
-                );
-
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPassword()
-        )) {
-            throw new InvalidCredentialsException(
-                    "Invalid email or password"
-            );
+                return new LoginResponse(
+                                accessToken,
+                                refreshToken,
+                                userResponse);
         }
 
-        if (!user.getIsActive()) {
-            throw new InvalidCredentialsException(
-                    "User account is inactive"
-            );
+        @Transactional
+        public TokenResponse refreshToken(
+                        RefreshTokenRequest request) {
+
+                // 1. Find the refresh token using its hash
+                RefreshToken storedToken = refreshTokenService.findByToken(
+                                request.refreshToken());
+
+                // 2. Validate token
+                refreshTokenService.validateRefreshToken(
+                                storedToken);
+
+                // 3. Get the user
+                User user = storedToken.getUser();
+
+                // 4. Check user is still active
+                if (!user.getIsActive()) {
+                        throw new InvalidCredentialsException(
+                                        "User account is inactive");
+                }
+
+                // Validate that JWT itself is a refresh token
+                if (!"REFRESH".equals(
+                                jwtService.extractTokenType(
+                                                request.refreshToken()))) {
+                        throw new InvalidCredentialsException(
+                                        "Invalid token type");
+                }
+
+                // 5. Revoke the old refresh token
+                refreshTokenService.revokeToken(
+                                storedToken);
+
+                // 6. Generate new access token
+                String newAccessToken = jwtService.generateAccessToken(user);
+
+                // 7. Generate new refresh token
+                String newRefreshToken = jwtService.generateRefreshToken(user);
+
+                // 8. Save the new refresh token hash
+                refreshTokenService.saveRefreshToken(
+                                newRefreshToken,
+                                user,
+                                jwtService.getRefreshTokenExpiryDate());
+
+                // 9. Return the new token pair
+                return new TokenResponse(
+                                newAccessToken,
+                                newRefreshToken);
         }
 
-        String accessToken =
-                jwtService.generateAccessToken(user);
+        public UserResponse updateProfile(
+        User currentUser,
+        UpdateProfileRequest request
+) {
 
-        String refreshToken =
-                jwtService.generateRefreshToken(user);
+    // Check whether another user already owns this phone number
+    userRepository.findByPhone(request.getPhone())
+            .ifPresent(existingUser -> {
 
-        refreshTokenService.saveRefreshToken(
-                refreshToken,
-                user,
-                jwtService.getRefreshTokenExpiryDate()
-        );
+                if (!existingUser.getId()
+                        .equals(currentUser.getId())) {
 
-        UserResponse userResponse =
-                new UserResponse(
-                        user.getId(),
-                        user.getName(),
-                        user.getEmail(),
-                        user.getPhone(),
-                        user.getRole(),
-                        user.getIsActive(),
-                        user.getCreatedAt()
-                );
+                    throw new UserAlreadyExistsException(
+                            "Phone number already registered"
+                    );
+                }
+            });
 
-        return new LoginResponse(
-                accessToken,
-                refreshToken,
-                userResponse
-        );
-    }
+    currentUser.setName(request.getName());
+    currentUser.setPhone(request.getPhone());
 
-    @Transactional
-    public TokenResponse refreshToken(
-            RefreshTokenRequest request
-    ) {
+    User updatedUser =
+            userRepository.save(currentUser);
 
-        // 1. Find the refresh token using its hash
-        RefreshToken storedToken =
-                refreshTokenService.findByToken(
-                        request.refreshToken()
-                );
-
-        // 2. Validate token
-        refreshTokenService.validateRefreshToken(
-                storedToken
-        );
-
-        // 3. Get the user
-        User user = storedToken.getUser();
-
-        // 4. Check user is still active
-        if (!user.getIsActive()) {
-            throw new InvalidCredentialsException(
-                    "User account is inactive"
-            );
-        }
-
-        // Validate that JWT itself is a refresh token
-        if (!"REFRESH".equals(
-                jwtService.extractTokenType(
-                        request.refreshToken()
-                )
-        )) {
-            throw new InvalidCredentialsException(
-                    "Invalid token type"
-            );
-        }
-
-        // 5. Revoke the old refresh token
-        refreshTokenService.revokeToken(
-                storedToken
-        );
-
-        // 6. Generate new access token
-        String newAccessToken =
-                jwtService.generateAccessToken(user);
-
-        // 7. Generate new refresh token
-        String newRefreshToken =
-                jwtService.generateRefreshToken(user);
-
-        // 8. Save the new refresh token hash
-        refreshTokenService.saveRefreshToken(
-                newRefreshToken,
-                user,
-                jwtService.getRefreshTokenExpiryDate()
-        );
-
-        // 9. Return the new token pair
-        return new TokenResponse(
-                newAccessToken,
-                newRefreshToken
-        );
-    }
+    return new UserResponse(
+            updatedUser.getId(),
+            updatedUser.getName(),
+            updatedUser.getEmail(),
+            updatedUser.getPhone(),
+            updatedUser.getRole(),
+            updatedUser.getIsActive(),
+            updatedUser.getCreatedAt()
+    );
+}
 }
