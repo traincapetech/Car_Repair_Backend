@@ -1,27 +1,30 @@
 package com.carservice.backend.user.controller;
 
-import com.carservice.backend.common.exception.InvalidCredentialsException;
 import com.carservice.backend.common.response.ApiResponse;
 import com.carservice.backend.user.dto.CustomerRegistrationRequest;
-import com.carservice.backend.user.service.UserService;
+import com.carservice.backend.user.dto.LoginRequest;
+import com.carservice.backend.user.dto.LoginResponse;
+import com.carservice.backend.user.dto.LogoutRequest;
+import com.carservice.backend.user.dto.RefreshTokenRequest;
+import com.carservice.backend.user.dto.ResetPasswordRequest;
+import com.carservice.backend.user.dto.TokenResponse;
+import com.carservice.backend.user.dto.UpdateProfileRequest;
 import com.carservice.backend.user.dto.UserResponse;
+import com.carservice.backend.user.entity.User;
+import com.carservice.backend.user.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.carservice.backend.user.dto.LoginRequest;
-import com.carservice.backend.user.dto.LoginResponse;
-import com.carservice.backend.user.dto.RefreshTokenRequest;
-import com.carservice.backend.user.dto.TokenResponse;
-import jakarta.validation.Valid;
-import com.carservice.backend.user.entity.User;
-import org.springframework.security.core.Authentication;
-import com.carservice.backend.user.dto.UpdateProfileRequest;
-
+import com.carservice.backend.user.dto.ChangePasswordRequest;
+import com.carservice.backend.user.dto.ForgotPasswordRequest;
+import com.carservice.backend.user.dto.ResetPasswordRequest;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -29,7 +32,8 @@ public class UserController {
 
         private final UserService userService;
 
-        public UserController(UserService userService) {
+        public UserController(
+                        UserService userService) {
                 this.userService = userService;
         }
 
@@ -73,50 +77,97 @@ public class UserController {
                                                 response));
         }
 
+        @PostMapping("/logout")
+        public ResponseEntity<ApiResponse<Void>> logout(
+                        @Valid @RequestBody LogoutRequest request) {
+
+                userService.logout(request);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Logout successful",
+                                                null));
+        }
+
         @GetMapping("/me")
-public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
-        Authentication authentication) {
+        public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
+                        Authentication authentication) {
 
-    User currentUser = (User) authentication.getPrincipal();
+                User user = (User) authentication.getPrincipal();
 
-    UserResponse response = new UserResponse(
-            currentUser.getId(),
-            currentUser.getName(),
-            currentUser.getEmail(),
-            currentUser.getPhone(),
-            currentUser.getRole(),
-            currentUser.getIsActive(),
-            currentUser.getCreatedAt()
-    );
+                UserResponse response = new UserResponse(
+                                user.getId(),
+                                user.getName(),
+                                user.getEmail(),
+                                user.getPhone(),
+                                user.getRole(),
+                                user.getIsActive(),
+                                user.getCreatedAt());
 
-    return ResponseEntity.ok(
-            ApiResponse.success(
-                    "Authenticated user",
-                    response
-            )
-    );
-}
-       @PutMapping("/me")
-public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
-        Authentication authentication,
-        @Valid @RequestBody UpdateProfileRequest request) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Authenticated user",
+                                                response));
+        }
 
-    if (authentication == null || !authentication.isAuthenticated()) {
-        throw new InvalidCredentialsException("Authentication required");
-    }
+        @PutMapping("/me")
+        public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
+                        Authentication authentication,
+                        @Valid @RequestBody UpdateProfileRequest request) {
 
-    User currentUser = (User) authentication.getPrincipal();
+                User currentUser = (User) authentication.getPrincipal();
 
-    UserResponse response = userService.updateProfile(
-            currentUser,
-            request
-    );
+                UserResponse response = userService.updateProfile(
+                                currentUser,
+                                request);
 
-    return ResponseEntity.ok(
-            ApiResponse.success(
-                    "Profile updated successfully",
-                    response
-            )
-    );
-}
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Profile updated successfully",
+                                                response));
+        }
+
+        @PutMapping("/change-password")
+        public ResponseEntity<ApiResponse<Void>> changePassword(
+                        Authentication authentication,
+                        @Valid @RequestBody ChangePasswordRequest request) {
+
+                User currentUser = (User) authentication.getPrincipal();
+
+                userService.changePassword(
+                                currentUser,
+                                request);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Password changed successfully",
+                                                null));
+        }
+
+        @PostMapping("/forgot-password")
+        public ResponseEntity<ApiResponse<String>> forgotPassword(
+                        @Valid @RequestBody ForgotPasswordRequest request) {
+
+                String resetToken = userService.forgotPassword(
+                                request.getEmail());
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Password reset token generated",
+                                                resetToken));
+        }
+
+        @PostMapping("/reset-password")
+        public ResponseEntity<ApiResponse<String>> resetPassword(
+                        @Valid @RequestBody ResetPasswordRequest request) {
+
+                userService.resetPassword(
+                                request.getResetToken(),
+                                request.getNewPassword());
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Password reset successfully",
+                                                null));
+        }
 }

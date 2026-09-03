@@ -43,7 +43,8 @@ public class RefreshTokenService {
 
     public RefreshToken findByToken(String refreshToken) {
 
-        String tokenHash = hashToken(refreshToken);
+        String tokenHash =
+                TokenHashUtil.hash(refreshToken);
 
         return refreshTokenRepository
                 .findByTokenHash(tokenHash)
@@ -82,7 +83,20 @@ public class RefreshTokenService {
         refreshTokenRepository.save(refreshToken);
     }
 
-    private String hashToken(String token) {
-        return TokenHashUtil.hash(token);
+    /*
+     * Logout
+     *
+     * Finds the refresh token,
+     * validates that it is still active,
+     * and then revokes it.
+     */
+    public void logout(String refreshToken) {
+
+        RefreshToken storedToken =
+                findByToken(refreshToken);
+
+        validateRefreshToken(storedToken);
+
+        revokeToken(storedToken);
     }
 }
