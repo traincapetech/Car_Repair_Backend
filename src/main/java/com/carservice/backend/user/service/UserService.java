@@ -129,48 +129,45 @@ public class UserService {
         public TokenResponse refreshToken(
                         RefreshTokenRequest request) {
 
-                // 1. Find refresh token using its hash
+                // 1. Validate that the supplied JWT is valid and explicitly a REFRESH token
+                if (request.refreshToken() == null || !jwtService.isRefreshToken(request.refreshToken())) {
+                        throw new InvalidCredentialsException(
+                                        "Invalid refresh token");
+                }
+
+                // 2. Find refresh token in DB using its hash
                 RefreshToken storedToken = refreshTokenService.findByToken(
                                 request.refreshToken());
 
-                // 2. Validate refresh token
+                // 3. Validate refresh token state (not revoked, not expired)
                 refreshTokenService.validateRefreshToken(
                                 storedToken);
 
-                // 3. Get user
+                // 4. Get user and verify account is still active
                 User user = storedToken.getUser();
 
-                // 4. Check user is still active
-                if (!user.getIsActive()) {
+                if (!Boolean.TRUE.equals(user.getIsActive())) {
                         throw new InvalidCredentialsException(
                                         "User account is inactive");
                 }
 
-                // 5. Make sure JWT is actually a refresh token
-                if (!"REFRESH".equals(
-                                jwtService.extractTokenType(
-                                                request.refreshToken()))) {
-                        throw new InvalidCredentialsException(
-                                        "Invalid token type");
-                }
-
-                // 6. Revoke old refresh token
+                // 5. Revoke old refresh token (rotation)
                 refreshTokenService.revokeToken(
                                 storedToken);
 
-                // 7. Generate new access token
+                // 6. Generate new access token
                 String newAccessToken = jwtService.generateAccessToken(user);
 
-                // 8. Generate new refresh token
+                // 7. Generate new refresh token
                 String newRefreshToken = jwtService.generateRefreshToken(user);
 
-                // 9. Save new refresh token
+                // 8. Save new refresh token
                 refreshTokenService.saveRefreshToken(
                                 newRefreshToken,
                                 user,
                                 jwtService.getRefreshTokenExpiryDate());
 
-                // 10. Return new token pair
+                // 9. Return new token pair
                 return new TokenResponse(
                                 newAccessToken,
                                 newRefreshToken);
@@ -248,6 +245,9 @@ public class UserService {
 
                 // 5. Save updated user
                 userRepository.save(currentUser);
+
+                // 6. Invalidate existing sessions across devices
+                refreshTokenService.revokeAllUserTokens(currentUser.getId());
         }
 
         /*
@@ -265,18 +265,15 @@ public class UserService {
         @Transactional
         public String forgotPassword(String email) {
 
-                User user = userRepository
-                                .findByEmail(email)
-                                .orElseThrow(() -> new InvalidCredentialsException(
-                                                "Invalid email address"));
+                java.util.Optional<User> userOptional = userRepository.findByEmail(email);
 
-                if (!user.getIsActive()) {
-                        throw new InvalidCredentialsException(
-                                        "User account is inactive");
+                // Avoid user enumeration: do not reveal whether account exists or is inactive
+                if (userOptional.isEmpty() || !Boolean.TRUE.equals(userOptional.get().getIsActive())) {
+                        return null;
                 }
 
                 return passwordResetTokenService
-                                .createPasswordResetToken(user);
+                                .createPasswordResetToken(userOptional.get());
         }
 
         @Transactional
@@ -291,26 +288,62 @@ public class UserService {
                 User user = passwordResetToken.getUser();
 
                 // 3. Make sure account is still active
-                if (!user.getIsActive()) {
+                if (!Boolean.TRUE.equals(user.getIsActive())) {
                         throw new InvalidCredentialsException(
                                         "User account is inactive");
                 }
 
-                // 4. Update password
+                // 4. Prevent reusing the same password
+                if (passwordEncoder.matches(newPassword, user.getPassword())) {
+                        throw new InvalidCredentialsException(
+                                        "New password must be different from current password");
+                }
+
+                // 5. Update password
                 user.setPassword(
                                 passwordEncoder.encode(newPassword));
 
                 userRepository.save(user);
 
-                // 5. Mark reset token as used
+                // 6. Mark reset token as used
                 passwordResetTokenService.markTokenAsUsed(
                                 passwordResetToken);
 
                 /*
-                 * We will also revoke existing refresh tokens here.
-                 *
-                 * This is important because resetting a password should
-                 * invalidate existing sessions.
+                 * Invalidate all existing refresh tokens for this user
+                 * so that resetting a password terminates existing sessions.
                  */
+                refreshTokenService.revokeAllUserTokens(user.getId());
+        }
+
+        /*
+         * Account Deactivation
+         *
+         * Deactivates the user account (sets isActive to false) and revokes all active refresh tokens.
+         * If a confirmation password is provided, verifies it first.
+         */
+        @Transactional
+        public void deactivateAccount(
+                        User currentUser,
+                        String password) {
+
+                if (password != null && !password.isBlank()) {
+                        if (!passwordEncoder.matches(
+                                        password,
+                                        currentUser.getPassword())) {
+                                throw new InvalidCredentialsException(
+                                                "Current password is incorrect");
+                        }
+                }
+
+                currentUser.setIsActive(false);
+                userRepository.save(currentUser);
+
+                refreshTokenService.revokeAllUserTokens(currentUser.getId());
+        }
+
+        @Transactional
+        public void deactivateAccount(User currentUser) {
+                deactivateAccount(currentUser, null);
         }
 }

@@ -15,6 +15,10 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    public static final String CLAIM_TOKEN_TYPE = "tokenType";
+    public static final String TOKEN_TYPE_ACCESS = "ACCESS";
+    public static final String TOKEN_TYPE_REFRESH = "REFRESH";
+
     @Value("${jwt.secret}")
     private String jwtSecret;
 
@@ -32,7 +36,7 @@ public class JwtService {
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
-                .claim("tokenType", "ACCESS")
+                .claim(CLAIM_TOKEN_TYPE, TOKEN_TYPE_ACCESS)
                 .issuedAt(new Date())
                 .expiration(
                         new Date(
@@ -51,7 +55,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
-                .claim("tokenType", "REFRESH")
+                .claim(CLAIM_TOKEN_TYPE, TOKEN_TYPE_REFRESH)
                 .issuedAt(new Date())
                 .expiration(
                         new Date(
@@ -76,32 +80,64 @@ public class JwtService {
     public String extractTokenType(String token) {
 
         return extractAllClaims(token)
-                .get("tokenType", String.class);
+                .get(CLAIM_TOKEN_TYPE, String.class);
+    }
+
+    // Check if token is explicitly an ACCESS token
+    public boolean isAccessToken(String token) {
+        try {
+            return TOKEN_TYPE_ACCESS.equals(extractTokenType(token));
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    // Check if token is explicitly a REFRESH token
+    public boolean isRefreshToken(String token) {
+        try {
+            return TOKEN_TYPE_REFRESH.equals(extractTokenType(token));
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
 
-    // Validate token
+    // Validate access token
     public boolean isTokenValid(
             String token,
             String email
     ) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String tokenType = claims.get(CLAIM_TOKEN_TYPE, String.class);
 
-        return email.equals(extractEmail(token))
-                && !isTokenExpired(token);
+            return TOKEN_TYPE_ACCESS.equals(tokenType)
+                    && email != null
+                    && email.equals(claims.getSubject())
+                    && claims.getExpiration() != null
+                    && claims.getExpiration().after(new Date());
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
 
     // Check expiration
     public boolean isTokenExpired(String token) {
-
-        return extractAllClaims(token)
-                .getExpiration()
-                .before(new Date());
+        try {
+            return extractAllClaims(token)
+                    .getExpiration()
+                    .before(new Date());
+        } catch (io.jsonwebtoken.ExpiredJwtException exception) {
+            return true;
+        } catch (Exception exception) {
+            return true;
+        }
     }
 
 
     // Extract all claims
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
 
         return Jwts.parser()
                 .verifyWith(getSigningKey())

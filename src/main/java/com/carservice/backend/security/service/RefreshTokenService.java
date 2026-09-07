@@ -99,4 +99,8 @@ public class RefreshTokenService {
 
         revokeToken(storedToken);
     }
+
+    public void revokeAllUserTokens(Long userId) {
+        refreshTokenRepository.revokeAllByUserId(userId);
+    }
 }

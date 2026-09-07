@@ -94,4 +94,24 @@ public class GlobalExceptionHandler {
                                                 ApiResponse.error(
                                                                 "Access denied"));
         }
+
+        @ExceptionHandler(io.jsonwebtoken.JwtException.class)
+        public ResponseEntity<ApiResponse<Void>> handleJwtException(
+                        io.jsonwebtoken.JwtException exception) {
+
+                return ResponseEntity
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .body(
+                                                ApiResponse.error("Invalid or expired token"));
+        }
+
+        @ExceptionHandler(AuthenticationException.class)
+        public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(
+                        AuthenticationException exception) {
+
+                return ResponseEntity
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .body(
+                                                ApiResponse.error("Authentication required"));
+        }
 }

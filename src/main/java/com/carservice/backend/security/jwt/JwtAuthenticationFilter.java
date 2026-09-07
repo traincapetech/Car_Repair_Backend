@@ -2,11 +2,12 @@ package com.carservice.backend.security.jwt;
 
 import com.carservice.backend.user.entity.User;
 import com.carservice.backend.user.repository.UserRepository;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,8 @@ import java.util.Optional;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -40,21 +43,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        System.out.println(
-        "JWT FILTER -> "
-                + request.getMethod()
-                + " "
-                + request.getRequestURI()
-                + " | Authorization: "
-                + (authHeader != null)
-);
 
         /*
-         * No Authorization header.
+         * No Authorization header or non-Bearer token.
          *
-         * We don't immediately reject the request here.
-         * Spring Security will decide later whether the
-         * requested endpoint requires authentication.
+         * We do not reject here; Spring Security decides later
+         * whether the target endpoint requires authentication.
          */
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -64,13 +58,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-
             /*
              * Only ACCESS tokens can authenticate API requests.
+             * Refresh tokens or tokens with any other type must be rejected immediately.
              */
-            String tokenType = jwtService.extractTokenType(token);
-
-            if (!"ACCESS".equals(tokenType)) {
+            if (!jwtService.isAccessToken(token)) {
+                log.debug("Token rejected: not an ACCESS token");
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -78,22 +71,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = jwtService.extractEmail(token);
 
             /*
-             * Don't authenticate the request again if Spring Security
-             * already has an authenticated user.
+             * Only authenticate if email exists and SecurityContext has no authentication yet.
              */
-            if (email != null
-                    && SecurityContextHolder
-                    .getContext()
-                    .getAuthentication() == null) {
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                Optional<User> userOptional =
-                        userRepository.findByEmail(email);
+                Optional<User> userOptional = userRepository.findByEmail(email);
 
                 if (userOptional.isPresent()) {
 
                     User user = userOptional.get();
 
-                    if (!user.getIsActive()) {
+                    /*
+                     * Inactive or deactivated users must never be authenticated.
+                     */
+                    if (!Boolean.TRUE.equals(user.getIsActive())) {
+                        log.debug("Token rejected: user account is inactive for user ID {}", user.getId());
                         filterChain.doFilter(request, response);
                         return;
                     }
@@ -101,9 +93,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (jwtService.isTokenValid(token, user.getEmail())) {
 
                         SimpleGrantedAuthority authority =
-                                new SimpleGrantedAuthority(
-                                        "ROLE_" + user.getRole().name()
-                                );
+                                new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
 
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(
@@ -113,37 +103,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 );
 
                         authentication.setDetails(
-                                new WebAuthenticationDetailsSource()
-                                        .buildDetails(request)
+                                new WebAuthenticationDetailsSource().buildDetails(request)
                         );
 
-                        SecurityContextHolder
-                                .getContext()
-                                .setAuthentication(authentication);
-                                System.out.println(
-        "JWT FILTER -> AUTHENTICATED USER: "
-                + user.getEmail()
-);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        log.debug("Successfully authenticated user ID {} with role {}", user.getId(), user.getRole());
                     }
                 }
             }
 
-        } catch (JwtException | IllegalArgumentException exception) {
-
+        } catch (Exception exception) {
             /*
-             * Invalid/expired JWT.
-             *
-             * We don't expose JWT parsing details to the client.
-             * The request continues without authentication and
-             * Spring Security will return 401 if the endpoint is protected.
+             * Invalid, malformed, or expired JWT.
+             * Fail safely without populating SecurityContext or leaking details.
              */
+            log.debug("JWT processing failed: {}", exception.getMessage());
         }
-System.out.println(
-        "JWT FILTER -> FINAL AUTH: "
-                + SecurityContextHolder
-                        .getContext()
-                        .getAuthentication()
-);
+
         filterChain.doFilter(request, response);
     }
 }

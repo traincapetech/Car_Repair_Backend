@@ -1,17 +1,23 @@
 package com.carservice.backend.user.controller;
 
 import com.carservice.backend.common.response.ApiResponse;
+import com.carservice.backend.user.dto.DeactivateAccountRequest;
 import com.carservice.backend.user.dto.UserResponse;
 import com.carservice.backend.user.entity.User;
+import com.carservice.backend.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserProfileController {
+
+    private final UserService userService;
+
+    public UserProfileController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
@@ -34,6 +40,24 @@ public class UserProfileController {
                 ApiResponse.success(
                         "Authenticated user",
                         response
+                )
+        );
+    }
+
+    @PutMapping("/deactivate")
+    public ResponseEntity<ApiResponse<Void>> deactivateAccount(
+            Authentication authentication,
+            @RequestBody(required = false) DeactivateAccountRequest request
+    ) {
+
+        User currentUser = (User) authentication.getPrincipal();
+        String password = request != null ? request.getPassword() : null;
+        userService.deactivateAccount(currentUser, password);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Account deactivated successfully",
+                        null
                 )
         );
     }

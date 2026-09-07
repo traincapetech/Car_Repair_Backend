@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.carservice.backend.user.dto.ChangePasswordRequest;
+import com.carservice.backend.user.dto.DeactivateAccountRequest;
 import com.carservice.backend.user.dto.ForgotPasswordRequest;
 import com.carservice.backend.user.dto.ResetPasswordRequest;
 
@@ -153,7 +154,7 @@ public class UserController {
 
                 return ResponseEntity.ok(
                                 ApiResponse.success(
-                                                "Password reset token generated",
+                                                "If the account exists, a password reset request has been created.",
                                                 resetToken));
         }
 
@@ -169,5 +170,29 @@ public class UserController {
                                 ApiResponse.success(
                                                 "Password reset successfully",
                                                 null));
+        }
+
+        @PutMapping("/deactivate")
+        public ResponseEntity<ApiResponse<Void>> deactivateAccount(
+                        Authentication authentication,
+                        @RequestBody(required = false) DeactivateAccountRequest request) {
+
+                User currentUser = (User) authentication.getPrincipal();
+
+                String password = request != null ? request.getPassword() : null;
+                userService.deactivateAccount(currentUser, password);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Account deactivated successfully",
+                                                null));
+        }
+
+        @PostMapping("/deactivate")
+        public ResponseEntity<ApiResponse<Void>> deactivateAccountPost(
+                        Authentication authentication,
+                        @RequestBody(required = false) DeactivateAccountRequest request) {
+
+                return deactivateAccount(authentication, request);
         }
 }
