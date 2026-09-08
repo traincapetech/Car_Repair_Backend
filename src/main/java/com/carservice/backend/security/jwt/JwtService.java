@@ -33,6 +33,7 @@ public class JwtService {
     public String generateAccessToken(User user) {
 
         return Jwts.builder()
+                .id(java.util.UUID.randomUUID().toString())
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
@@ -53,6 +54,7 @@ public class JwtService {
     public String generateRefreshToken(User user) {
 
         return Jwts.builder()
+                .id(java.util.UUID.randomUUID().toString())
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
                 .claim(CLAIM_TOKEN_TYPE, TOKEN_TYPE_REFRESH)
