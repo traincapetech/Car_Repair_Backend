@@ -1,0 +1,830 @@
+[
+  {
+    "name": "Maruti Suzuki",
+    "countryOfOrigin": "India",
+    "displayOrder": 1,
+    "models": [
+      { "name": "800", "bodyType": "Hatchback", "yearIntroduced": 1983, "yearDiscontinued": 2014 },
+      { "name": "1000", "bodyType": "Sedan", "yearIntroduced": 1990, "yearDiscontinued": 2000 },
+      { "name": "Zen", "bodyType": "Hatchback", "yearIntroduced": 1993, "yearDiscontinued": 2006 },
+      { "name": "Zen Estilo", "bodyType": "Hatchback", "yearIntroduced": 2006, "yearDiscontinued": 2013 },
+      { "name": "Esteem", "bodyType": "Sedan", "yearIntroduced": 1994, "yearDiscontinued": 2007 },
+      { "name": "Omni", "bodyType": "Van", "yearIntroduced": 1984, "yearDiscontinued": 2019 },
+      { "name": "Gypsy", "bodyType": "SUV", "yearIntroduced": 1985, "yearDiscontinued": 2019 },
+      { "name": "Baleno (Sedan)", "bodyType": "Sedan", "yearIntroduced": 1999, "yearDiscontinued": 2007 },
+      { "name": "Baleno Altura", "bodyType": "Estate", "yearIntroduced": 2000, "yearDiscontinued": 2007 },
+      { "name": "Versa", "bodyType": "Van", "yearIntroduced": 2001, "yearDiscontinued": 2009 },
+      { "name": "Wagon R", "bodyType": "Hatchback", "yearIntroduced": 1999, "yearDiscontinued": null },
+      { "name": "Wagon R Stingray", "bodyType": "Hatchback", "yearIntroduced": 2013, "yearDiscontinued": 2017 },
+      { "name": "Alto", "bodyType": "Hatchback", "yearIntroduced": 2000, "yearDiscontinued": 2012 },
+      { "name": "Alto 800", "bodyType": "Hatchback", "yearIntroduced": 2012, "yearDiscontinued": 2023 },
+      { "name": "Alto K10", "bodyType": "Hatchback", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "Swift", "bodyType": "Hatchback", "yearIntroduced": 2005, "yearDiscontinued": null },
+      { "name": "Dzire", "bodyType": "Sedan", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "SX4", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": 2014 },
+      { "name": "Grand Vitara XL-7", "bodyType": "SUV", "yearIntroduced": 2003, "yearDiscontinued": 2007 },
+      { "name": "Grand Vitara (Import)", "bodyType": "SUV", "yearIntroduced": 2007, "yearDiscontinued": 2015 },
+      { "name": "A-Star", "bodyType": "Hatchback", "yearIntroduced": 2008, "yearDiscontinued": 2014 },
+      { "name": "Ritz", "bodyType": "Hatchback", "yearIntroduced": 2009, "yearDiscontinued": 2017 },
+      { "name": "Eeco", "bodyType": "Van", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "Kizashi", "bodyType": "Sedan", "yearIntroduced": 2011, "yearDiscontinued": 2014 },
+      { "name": "Ertiga", "bodyType": "MUV", "yearIntroduced": 2012, "yearDiscontinued": null },
+      { "name": "Celerio", "bodyType": "Hatchback", "yearIntroduced": 2014, "yearDiscontinued": null },
+      { "name": "Celerio X", "bodyType": "Hatchback", "yearIntroduced": 2017, "yearDiscontinued": 2021 },
+      { "name": "Ciaz", "bodyType": "Sedan", "yearIntroduced": 2014, "yearDiscontinued": 2025 },
+      { "name": "S-Cross", "bodyType": "Crossover", "yearIntroduced": 2015, "yearDiscontinued": 2022 },
+      { "name": "Baleno", "bodyType": "Hatchback", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "Brezza", "bodyType": "Compact SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "Ignis", "bodyType": "Hatchback", "yearIntroduced": 2017, "yearDiscontinued": 2026 },
+      { "name": "XL6", "bodyType": "MUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "S-Presso", "bodyType": "Micro SUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Grand Vitara", "bodyType": "Midsize SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Fronx", "bodyType": "Crossover SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Jimny", "bodyType": "SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Invicto", "bodyType": "MPV", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Hyundai",
+    "countryOfOrigin": "South Korea",
+    "displayOrder": 2,
+    "models": [
+      { "name": "Santro", "bodyType": "Hatchback", "yearIntroduced": 1998, "yearDiscontinued": 2014 },
+      { "name": "Santro (2nd Gen)", "bodyType": "Hatchback", "yearIntroduced": 2018, "yearDiscontinued": 2022 },
+      { "name": "Accent", "bodyType": "Sedan", "yearIntroduced": 1999, "yearDiscontinued": 2013 },
+      { "name": "Accent Viva", "bodyType": "Notchback", "yearIntroduced": 2002, "yearDiscontinued": 2007 },
+      { "name": "Sonata", "bodyType": "Sedan", "yearIntroduced": 2001, "yearDiscontinued": 2015 },
+      { "name": "Terracan", "bodyType": "SUV", "yearIntroduced": 2003, "yearDiscontinued": 2006 },
+      { "name": "Elantra", "bodyType": "Sedan", "yearIntroduced": 2004, "yearDiscontinued": 2022 },
+      { "name": "Getz", "bodyType": "Hatchback", "yearIntroduced": 2004, "yearDiscontinued": 2007 },
+      { "name": "Getz Prime", "bodyType": "Hatchback", "yearIntroduced": 2007, "yearDiscontinued": 2010 },
+      { "name": "Tucson", "bodyType": "SUV", "yearIntroduced": 2005, "yearDiscontinued": null },
+      { "name": "Verna", "bodyType": "Sedan", "yearIntroduced": 2006, "yearDiscontinued": null },
+      { "name": "i10", "bodyType": "Hatchback", "yearIntroduced": 2007, "yearDiscontinued": 2017 },
+      { "name": "Grand i10", "bodyType": "Hatchback", "yearIntroduced": 2013, "yearDiscontinued": 2020 },
+      { "name": "Grand i10 Nios", "bodyType": "Hatchback", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "i20", "bodyType": "Hatchback", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "i20 Active", "bodyType": "Crossover", "yearIntroduced": 2015, "yearDiscontinued": 2020 },
+      { "name": "i20 N Line", "bodyType": "Hatchback", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Santa Fe", "bodyType": "SUV", "yearIntroduced": 2011, "yearDiscontinued": 2017 },
+      { "name": "Eon", "bodyType": "Hatchback", "yearIntroduced": 2011, "yearDiscontinued": 2019 },
+      { "name": "Xcent", "bodyType": "Sedan", "yearIntroduced": 2014, "yearDiscontinued": 2020 },
+      { "name": "Creta", "bodyType": "SUV", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "Creta N Line", "bodyType": "SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "Venue", "bodyType": "Compact SUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Venue N Line", "bodyType": "Compact SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Kona Electric", "bodyType": "Electric SUV", "yearIntroduced": 2019, "yearDiscontinued": 2024 },
+      { "name": "Aura", "bodyType": "Sedan", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Alcazar", "bodyType": "SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Ioniq 5", "bodyType": "Electric SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Exter", "bodyType": "Micro SUV", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Tata Motors",
+    "countryOfOrigin": "India",
+    "displayOrder": 3,
+    "models": [
+      { "name": "Sierra", "bodyType": "SUV", "yearIntroduced": 1991, "yearDiscontinued": 2002 },
+      { "name": "Estate", "bodyType": "Estate", "yearIntroduced": 1992, "yearDiscontinued": 2000 },
+      { "name": "Sumo", "bodyType": "MUV", "yearIntroduced": 1994, "yearDiscontinued": 2019 },
+      { "name": "Sumo Grande", "bodyType": "MUV", "yearIntroduced": 2008, "yearDiscontinued": 2016 },
+      { "name": "Safari (Classic)", "bodyType": "SUV", "yearIntroduced": 1998, "yearDiscontinued": 2012 },
+      { "name": "Safari Storme", "bodyType": "SUV", "yearIntroduced": 2012, "yearDiscontinued": 2019 },
+      { "name": "Indica", "bodyType": "Hatchback", "yearIntroduced": 1998, "yearDiscontinued": 2018 },
+      { "name": "Indica Vista", "bodyType": "Hatchback", "yearIntroduced": 2008, "yearDiscontinued": 2015 },
+      { "name": "Indigo", "bodyType": "Sedan", "yearIntroduced": 2002, "yearDiscontinued": 2018 },
+      { "name": "Indigo Marina", "bodyType": "Estate", "yearIntroduced": 2004, "yearDiscontinued": 2010 },
+      { "name": "Indigo CS", "bodyType": "Compact Sedan", "yearIntroduced": 2008, "yearDiscontinued": 2016 },
+      { "name": "Indigo Manza", "bodyType": "Sedan", "yearIntroduced": 2009, "yearDiscontinued": 2015 },
+      { "name": "Nano", "bodyType": "Hatchback", "yearIntroduced": 2009, "yearDiscontinued": 2018 },
+      { "name": "Aria", "bodyType": "MUV/SUV", "yearIntroduced": 2010, "yearDiscontinued": 2017 },
+      { "name": "Venture", "bodyType": "Van", "yearIntroduced": 2011, "yearDiscontinued": 2017 },
+      { "name": "Zest", "bodyType": "Compact Sedan", "yearIntroduced": 2014, "yearDiscontinued": 2019 },
+      { "name": "Bolt", "bodyType": "Hatchback", "yearIntroduced": 2015, "yearDiscontinued": 2019 },
+      { "name": "Tiago", "bodyType": "Hatchback", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "Tiago NRG", "bodyType": "Crossover", "yearIntroduced": 2018, "yearDiscontinued": null },
+      { "name": "Tiago EV", "bodyType": "Electric Hatchback", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Tigor", "bodyType": "Compact Sedan", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "Tigor EV", "bodyType": "Electric Sedan", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Hexa", "bodyType": "MUV/SUV", "yearIntroduced": 2017, "yearDiscontinued": 2020 },
+      { "name": "Nexon", "bodyType": "Compact SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "Nexon EV", "bodyType": "Electric SUV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Harrier", "bodyType": "SUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Altroz", "bodyType": "Hatchback", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Safari", "bodyType": "SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Punch", "bodyType": "Micro SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Punch EV", "bodyType": "Electric SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "Curvv", "bodyType": "Coupe SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "Curvv EV", "bodyType": "Electric Coupe SUV", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Mahindra",
+    "countryOfOrigin": "India",
+    "displayOrder": 4,
+    "models": [
+      { "name": "Armada", "bodyType": "SUV", "yearIntroduced": 1993, "yearDiscontinued": 2001 },
+      { "name": "Classic", "bodyType": "SUV", "yearIntroduced": 1996, "yearDiscontinued": 2000 },
+      { "name": "Commander", "bodyType": "MUV", "yearIntroduced": 1991, "yearDiscontinued": 2006 },
+      { "name": "Major", "bodyType": "SUV", "yearIntroduced": 2004, "yearDiscontinued": 2010 },
+      { "name": "Voyager", "bodyType": "Van", "yearIntroduced": 1997, "yearDiscontinued": 2000 },
+      { "name": "Bolero", "bodyType": "SUV", "yearIntroduced": 2000, "yearDiscontinued": null },
+      { "name": "Bolero Invader", "bodyType": "SUV", "yearIntroduced": 2003, "yearDiscontinued": 2010 },
+      { "name": "Bolero Neo", "bodyType": "Compact SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Bolero Neo Plus", "bodyType": "SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "Scorpio", "bodyType": "SUV", "yearIntroduced": 2002, "yearDiscontinued": 2022 },
+      { "name": "Scorpio Classic", "bodyType": "SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Scorpio-N", "bodyType": "SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Xylo", "bodyType": "MUV", "yearIntroduced": 2009, "yearDiscontinued": 2019 },
+      { "name": "Quanto", "bodyType": "Compact SUV", "yearIntroduced": 2012, "yearDiscontinued": 2016 },
+      { "name": "NuvoSport", "bodyType": "Compact SUV", "yearIntroduced": 2016, "yearDiscontinued": 2018 },
+      { "name": "Verito", "bodyType": "Sedan", "yearIntroduced": 2011, "yearDiscontinued": 2019 },
+      { "name": "Verito Vibe", "bodyType": "Notchback", "yearIntroduced": 2013, "yearDiscontinued": 2019 },
+      { "name": "Thar", "bodyType": "Off-road SUV", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "Thar Roxx", "bodyType": "5-Door SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "XUV500", "bodyType": "SUV", "yearIntroduced": 2011, "yearDiscontinued": 2021 },
+      { "name": "XUV700", "bodyType": "SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "e2o", "bodyType": "Electric Hatchback", "yearIntroduced": 2013, "yearDiscontinued": 2016 },
+      { "name": "e2o Plus", "bodyType": "Electric Hatchback", "yearIntroduced": 2016, "yearDiscontinued": 2019 },
+      { "name": "KUV100", "bodyType": "Micro SUV", "yearIntroduced": 2016, "yearDiscontinued": 2023 },
+      { "name": "TUV300", "bodyType": "Compact SUV", "yearIntroduced": 2015, "yearDiscontinued": 2020 },
+      { "name": "TUV300 Plus", "bodyType": "SUV", "yearIntroduced": 2018, "yearDiscontinued": 2020 },
+      { "name": "Marazzo", "bodyType": "MPV", "yearIntroduced": 2018, "yearDiscontinued": 2024 },
+      { "name": "Alturas G4", "bodyType": "Premium SUV", "yearIntroduced": 2018, "yearDiscontinued": 2022 },
+      { "name": "XUV300", "bodyType": "Compact SUV", "yearIntroduced": 2019, "yearDiscontinued": 2024 },
+      { "name": "XUV 3XO", "bodyType": "Compact SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "XUV400 EV", "bodyType": "Electric SUV", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Toyota",
+    "countryOfOrigin": "Japan",
+    "displayOrder": 5,
+    "models": [
+      { "name": "Qualis", "bodyType": "MUV", "yearIntroduced": 2000, "yearDiscontinued": 2005 },
+      { "name": "Innova", "bodyType": "MPV", "yearIntroduced": 2005, "yearDiscontinued": 2016 },
+      { "name": "Innova Crysta", "bodyType": "MPV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "Innova Hycross", "bodyType": "MPV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Corolla", "bodyType": "Sedan", "yearIntroduced": 2003, "yearDiscontinued": 2008 },
+      { "name": "Corolla Altis", "bodyType": "Sedan", "yearIntroduced": 2008, "yearDiscontinued": 2020 },
+      { "name": "Camry", "bodyType": "Sedan", "yearIntroduced": 2002, "yearDiscontinued": null },
+      { "name": "Fortuner", "bodyType": "SUV", "yearIntroduced": 2009, "yearDiscontinued": null },
+      { "name": "Fortuner Legender", "bodyType": "SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Prado (Land Cruiser)", "bodyType": "SUV", "yearIntroduced": 2004, "yearDiscontinued": 2020 },
+      { "name": "Land Cruiser 200", "bodyType": "SUV", "yearIntroduced": 2009, "yearDiscontinued": 2020 },
+      { "name": "Land Cruiser 300", "bodyType": "SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Prius", "bodyType": "Hybrid Sedan", "yearIntroduced": 2010, "yearDiscontinued": 2020 },
+      { "name": "Etios", "bodyType": "Sedan", "yearIntroduced": 2010, "yearDiscontinued": 2020 },
+      { "name": "Etios Liva", "bodyType": "Hatchback", "yearIntroduced": 2011, "yearDiscontinued": 2020 },
+      { "name": "Etios Cross", "bodyType": "Crossover", "yearIntroduced": 2014, "yearDiscontinued": 2020 },
+      { "name": "Yaris", "bodyType": "Sedan", "yearIntroduced": 2018, "yearDiscontinued": 2021 },
+      { "name": "Glanza", "bodyType": "Hatchback", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Urban Cruiser", "bodyType": "Compact SUV", "yearIntroduced": 2020, "yearDiscontinued": 2022 },
+      { "name": "Urban Cruiser Hyryder", "bodyType": "Midsize SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Urban Cruiser Taisor", "bodyType": "Crossover SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "Rumion", "bodyType": "MPV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Hilux", "bodyType": "Pickup Truck", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Vellfire", "bodyType": "Luxury MPV", "yearIntroduced": 2020, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Honda",
+    "countryOfOrigin": "Japan",
+    "displayOrder": 6,
+    "models": [
+      { "name": "City (1st Gen)", "bodyType": "Sedan", "yearIntroduced": 1998, "yearDiscontinued": 2003 },
+      { "name": "City (2nd Gen / ZX)", "bodyType": "Sedan", "yearIntroduced": 2003, "yearDiscontinued": 2008 },
+      { "name": "City (3rd Gen)", "bodyType": "Sedan", "yearIntroduced": 2008, "yearDiscontinued": 2013 },
+      { "name": "City (4th Gen)", "bodyType": "Sedan", "yearIntroduced": 2014, "yearDiscontinued": 2023 },
+      { "name": "City (5th Gen)", "bodyType": "Sedan", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "City e:HEV (Hybrid)", "bodyType": "Hybrid Sedan", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Accord", "bodyType": "Sedan", "yearIntroduced": 2001, "yearDiscontinued": 2020 },
+      { "name": "CR-V", "bodyType": "SUV", "yearIntroduced": 2003, "yearDiscontinued": 2020 },
+      { "name": "Civic (8th Gen)", "bodyType": "Sedan", "yearIntroduced": 2006, "yearDiscontinued": 2012 },
+      { "name": "Civic (10th Gen)", "bodyType": "Sedan", "yearIntroduced": 2019, "yearDiscontinued": 2020 },
+      { "name": "Jazz", "bodyType": "Hatchback", "yearIntroduced": 2009, "yearDiscontinued": 2023 },
+      { "name": "Brio", "bodyType": "Hatchback", "yearIntroduced": 2011, "yearDiscontinued": 2019 },
+      { "name": "Amaze", "bodyType": "Compact Sedan", "yearIntroduced": 2013, "yearDiscontinued": null },
+      { "name": "Mobilio", "bodyType": "MPV", "yearIntroduced": 2014, "yearDiscontinued": 2017 },
+      { "name": "BR-V", "bodyType": "Compact SUV", "yearIntroduced": 2016, "yearDiscontinued": 2020 },
+      { "name": "WR-V", "bodyType": "Crossover", "yearIntroduced": 2017, "yearDiscontinued": 2023 },
+      { "name": "Elevate", "bodyType": "Midsize SUV", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Kia",
+    "countryOfOrigin": "South Korea",
+    "displayOrder": 7,
+    "models": [
+      { "name": "Seltos", "bodyType": "SUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Carnival", "bodyType": "MPV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Sonet", "bodyType": "Compact SUV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Carens", "bodyType": "MPV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "EV6", "bodyType": "Electric Crossover", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "EV9", "bodyType": "Electric SUV", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Volkswagen",
+    "countryOfOrigin": "Germany",
+    "displayOrder": 8,
+    "models": [
+      { "name": "Passat", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": 2020 },
+      { "name": "Jetta", "bodyType": "Sedan", "yearIntroduced": 2008, "yearDiscontinued": 2017 },
+      { "name": "Polo", "bodyType": "Hatchback", "yearIntroduced": 2010, "yearDiscontinued": 2022 },
+      { "name": "Cross Polo", "bodyType": "Crossover", "yearIntroduced": 2013, "yearDiscontinued": 2017 },
+      { "name": "Polo GTI", "bodyType": "Hot Hatch", "yearIntroduced": 2016, "yearDiscontinued": 2018 },
+      { "name": "Vento", "bodyType": "Sedan", "yearIntroduced": 2010, "yearDiscontinued": 2022 },
+      { "name": "Beetle", "bodyType": "Hatchback", "yearIntroduced": 2009, "yearDiscontinued": 2018 },
+      { "name": "Touareg", "bodyType": "SUV", "yearIntroduced": 2008, "yearDiscontinued": 2014 },
+      { "name": "Ameo", "bodyType": "Compact Sedan", "yearIntroduced": 2016, "yearDiscontinued": 2020 },
+      { "name": "Tiguan", "bodyType": "SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "T-Roc", "bodyType": "Crossover", "yearIntroduced": 2020, "yearDiscontinued": 2021 },
+      { "name": "Tiguan Allspace", "bodyType": "7-Seater SUV", "yearIntroduced": 2020, "yearDiscontinued": 2021 },
+      { "name": "Taigun", "bodyType": "Midsize SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Virtus", "bodyType": "Sedan", "yearIntroduced": 2022, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Skoda",
+    "countryOfOrigin": "Czech Republic",
+    "displayOrder": 9,
+    "models": [
+      { "name": "Octavia (Mk1)", "bodyType": "Sedan", "yearIntroduced": 2001, "yearDiscontinued": 2010 },
+      { "name": "Octavia Combi", "bodyType": "Estate", "yearIntroduced": 2002, "yearDiscontinued": 2008 },
+      { "name": "Laura", "bodyType": "Sedan", "yearIntroduced": 2005, "yearDiscontinued": 2013 },
+      { "name": "Octavia (Mk3/Mk4)", "bodyType": "Sedan", "yearIntroduced": 2013, "yearDiscontinued": 2023 },
+      { "name": "Octavia RS", "bodyType": "Performance Sedan", "yearIntroduced": 2004, "yearDiscontinued": 2023 },
+      { "name": "Superb", "bodyType": "Sedan", "yearIntroduced": 2004, "yearDiscontinued": null },
+      { "name": "Fabia", "bodyType": "Hatchback", "yearIntroduced": 2008, "yearDiscontinued": 2013 },
+      { "name": "Yeti", "bodyType": "SUV", "yearIntroduced": 2010, "yearDiscontinued": 2017 },
+      { "name": "Rapid", "bodyType": "Sedan", "yearIntroduced": 2011, "yearDiscontinued": 2021 },
+      { "name": "Kodiaq", "bodyType": "SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "Karoq", "bodyType": "SUV", "yearIntroduced": 2020, "yearDiscontinued": 2021 },
+      { "name": "Kushaq", "bodyType": "Midsize SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Slavia", "bodyType": "Sedan", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Kylaq", "bodyType": "Compact SUV", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Renault",
+    "countryOfOrigin": "France",
+    "displayOrder": 10,
+    "models": [
+      { "name": "Logan", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": 2011 },
+      { "name": "Fluence", "bodyType": "Sedan", "yearIntroduced": 2011, "yearDiscontinued": 2017 },
+      { "name": "Koleos", "bodyType": "SUV", "yearIntroduced": 2011, "yearDiscontinued": 2017 },
+      { "name": "Pulse", "bodyType": "Hatchback", "yearIntroduced": 2012, "yearDiscontinued": 2017 },
+      { "name": "Duster", "bodyType": "SUV", "yearIntroduced": 2012, "yearDiscontinued": 2022 },
+      { "name": "Scala", "bodyType": "Sedan", "yearIntroduced": 2012, "yearDiscontinued": 2017 },
+      { "name": "Lodgy", "bodyType": "MPV", "yearIntroduced": 2015, "yearDiscontinued": 2020 },
+      { "name": "Kwid", "bodyType": "Hatchback", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "Captur", "bodyType": "Crossover", "yearIntroduced": 2017, "yearDiscontinued": 2020 },
+      { "name": "Triber", "bodyType": "Compact MPV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Kiger", "bodyType": "Compact SUV", "yearIntroduced": 2021, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Nissan",
+    "countryOfOrigin": "Japan",
+    "displayOrder": 11,
+    "models": [
+      { "name": "X-Trail (Gen 1/2)", "bodyType": "SUV", "yearIntroduced": 2004, "yearDiscontinued": 2014 },
+      { "name": "X-Trail (Gen 4)", "bodyType": "SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "Teana", "bodyType": "Sedan", "yearIntroduced": 2006, "yearDiscontinued": 2014 },
+      { "name": "370Z", "bodyType": "Sports Coupe", "yearIntroduced": 2010, "yearDiscontinued": 2014 },
+      { "name": "Micra", "bodyType": "Hatchback", "yearIntroduced": 2010, "yearDiscontinued": 2020 },
+      { "name": "Micra Active", "bodyType": "Hatchback", "yearIntroduced": 2013, "yearDiscontinued": 2020 },
+      { "name": "Sunny", "bodyType": "Sedan", "yearIntroduced": 2011, "yearDiscontinued": 2020 },
+      { "name": "Evalia", "bodyType": "MPV", "yearIntroduced": 2012, "yearDiscontinued": 2017 },
+      { "name": "Terrano", "bodyType": "SUV", "yearIntroduced": 2013, "yearDiscontinued": 2020 },
+      { "name": "GT-R", "bodyType": "Supercar", "yearIntroduced": 2016, "yearDiscontinued": 2022 },
+      { "name": "Kicks", "bodyType": "SUV", "yearIntroduced": 2019, "yearDiscontinued": 2023 },
+      { "name": "Magnite", "bodyType": "Compact SUV", "yearIntroduced": 2020, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "MG Motor",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 12,
+    "models": [
+      { "name": "Hector", "bodyType": "SUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "ZS EV", "bodyType": "Electric SUV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Hector Plus", "bodyType": "SUV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Gloster", "bodyType": "Fullsize SUV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Astor", "bodyType": "Midsize SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Comet EV", "bodyType": "Electric Hatchback", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Windsor EV", "bodyType": "Electric Crossover", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Jeep",
+    "countryOfOrigin": "United States",
+    "displayOrder": 13,
+    "models": [
+      { "name": "Wrangler", "bodyType": "Off-road SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "Grand Cherokee", "bodyType": "Luxury SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "Compass", "bodyType": "SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "Meridian", "bodyType": "7-Seater SUV", "yearIntroduced": 2022, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Citroen",
+    "countryOfOrigin": "France",
+    "displayOrder": 14,
+    "models": [
+      { "name": "C5 Aircross", "bodyType": "SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "C3", "bodyType": "Hatchback", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "eC3", "bodyType": "Electric Hatchback", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "C3 Aircross (Aircross)", "bodyType": "Midsize SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Basalt", "bodyType": "Coupe SUV", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "BYD",
+    "countryOfOrigin": "China",
+    "displayOrder": 15,
+    "models": [
+      { "name": "e6", "bodyType": "Electric MPV", "yearIntroduced": 2021, "yearDiscontinued": 2024 },
+      { "name": "Atto 3", "bodyType": "Electric SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Seal", "bodyType": "Electric Sedan", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "eMAX 7", "bodyType": "Electric MPV", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Force Motors",
+    "countryOfOrigin": "India",
+    "displayOrder": 16,
+    "models": [
+      { "name": "Trax Cruiser", "bodyType": "MUV", "yearIntroduced": 1993, "yearDiscontinued": null },
+      { "name": "Trax Toofan", "bodyType": "MUV", "yearIntroduced": 1995, "yearDiscontinued": null },
+      { "name": "Trax Gama", "bodyType": "SUV", "yearIntroduced": 1998, "yearDiscontinued": 2012 },
+      { "name": "Force One", "bodyType": "SUV", "yearIntroduced": 2011, "yearDiscontinued": 2016 },
+      { "name": "Gurkha", "bodyType": "Off-road SUV", "yearIntroduced": 2013, "yearDiscontinued": null },
+      { "name": "Urbania", "bodyType": "Passenger Van", "yearIntroduced": 2022, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Isuzu",
+    "countryOfOrigin": "Japan",
+    "displayOrder": 17,
+    "models": [
+      { "name": "MU-7", "bodyType": "SUV", "yearIntroduced": 2013, "yearDiscontinued": 2017 },
+      { "name": "MU-X", "bodyType": "SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "D-Max V-Cross", "bodyType": "Lifestyle Pickup", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "D-Max Hi-Lander", "bodyType": "Pickup Truck", "yearIntroduced": 2021, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "BMW",
+    "countryOfOrigin": "Germany",
+    "displayOrder": 18,
+    "models": [
+      { "name": "1 Series", "bodyType": "Hatchback", "yearIntroduced": 2013, "yearDiscontinued": 2017 },
+      { "name": "2 Series Gran Coupe", "bodyType": "Sedan", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "3 Series", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "3 Series Gran Limousine", "bodyType": "Sedan", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "3 Series Gran Turismo (3 GT)", "bodyType": "Notchback", "yearIntroduced": 2014, "yearDiscontinued": 2020 },
+      { "name": "5 Series", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "5 Series Gran Turismo (5 GT)", "bodyType": "Notchback", "yearIntroduced": 2010, "yearDiscontinued": 2017 },
+      { "name": "6 Series Gran Coupe", "bodyType": "Coupe Sedan", "yearIntroduced": 2012, "yearDiscontinued": 2018 },
+      { "name": "6 Series Gran Turismo (6 GT)", "bodyType": "Fastback", "yearIntroduced": 2018, "yearDiscontinued": 2024 },
+      { "name": "7 Series", "bodyType": "Luxury Sedan", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "8 Series Gran Coupe", "bodyType": "Luxury Coupe Sedan", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "X1", "bodyType": "Compact Luxury SUV", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "X3", "bodyType": "Luxury SUV", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "X4", "bodyType": "Coupe SUV", "yearIntroduced": 2019, "yearDiscontinued": 2023 },
+      { "name": "X5", "bodyType": "Luxury SUV", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "X6", "bodyType": "Coupe SUV", "yearIntroduced": 2009, "yearDiscontinued": 2023 },
+      { "name": "X7", "bodyType": "Fullsize Luxury SUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Z4", "bodyType": "Roadster", "yearIntroduced": 2009, "yearDiscontinued": null },
+      { "name": "M2", "bodyType": "Sports Coupe", "yearIntroduced": 2018, "yearDiscontinued": null },
+      { "name": "M3", "bodyType": "Sports Sedan", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "M4", "bodyType": "Sports Coupe", "yearIntroduced": 2014, "yearDiscontinued": null },
+      { "name": "M5", "bodyType": "Super Sedan", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "M8 Gran Coupe", "bodyType": "Super Sedan", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "XM", "bodyType": "Performance Hybrid SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "i4", "bodyType": "Electric Sedan", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "i7", "bodyType": "Electric Luxury Sedan", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "iX1", "bodyType": "Electric SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "iX", "bodyType": "Electric SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "i8", "bodyType": "Hybrid Supercar", "yearIntroduced": 2015, "yearDiscontinued": 2020 }
+    ]
+  },
+  {
+    "name": "Mercedes-Benz",
+    "countryOfOrigin": "Germany",
+    "displayOrder": 19,
+    "models": [
+      { "name": "A-Class (Hatchback)", "bodyType": "Hatchback", "yearIntroduced": 2013, "yearDiscontinued": 2019 },
+      { "name": "A-Class Limousine", "bodyType": "Sedan", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "B-Class", "bodyType": "Hatchback / Tourer", "yearIntroduced": 2012, "yearDiscontinued": 2019 },
+      { "name": "C-Class", "bodyType": "Sedan", "yearIntroduced": 2001, "yearDiscontinued": null },
+      { "name": "CLA", "bodyType": "Coupe Sedan", "yearIntroduced": 2015, "yearDiscontinued": 2020 },
+      { "name": "CLS", "bodyType": "Coupe Sedan", "yearIntroduced": 2005, "yearDiscontinued": 2022 },
+      { "name": "E-Class", "bodyType": "Sedan", "yearIntroduced": 1995, "yearDiscontinued": null },
+      { "name": "S-Class", "bodyType": "Luxury Sedan", "yearIntroduced": 2000, "yearDiscontinued": null },
+      { "name": "Maybach S-Class", "bodyType": "Ultra Luxury Sedan", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "GLA", "bodyType": "Compact Luxury SUV", "yearIntroduced": 2014, "yearDiscontinued": null },
+      { "name": "GLB", "bodyType": "7-Seater Luxury SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "GLC", "bodyType": "Luxury SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "GLC Coupe", "bodyType": "Coupe SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "M-Class / ML-Class", "bodyType": "Luxury SUV", "yearIntroduced": 2008, "yearDiscontinued": 2015 },
+      { "name": "GLE", "bodyType": "Luxury SUV", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "GLE Coupe", "bodyType": "Coupe SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "GL-Class", "bodyType": "Fullsize Luxury SUV", "yearIntroduced": 2010, "yearDiscontinued": 2016 },
+      { "name": "GLS", "bodyType": "Fullsize Luxury SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "Maybach GLS", "bodyType": "Ultra Luxury SUV", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "G-Class", "bodyType": "Luxury Off-road SUV", "yearIntroduced": 2011, "yearDiscontinued": null },
+      { "name": "SLK / SLC", "bodyType": "Roadster", "yearIntroduced": 2005, "yearDiscontinued": 2020 },
+      { "name": "SL-Class", "bodyType": "Roadster", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "AMG GT", "bodyType": "Sports Car", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "EQA", "bodyType": "Electric SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "EQB", "bodyType": "Electric SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "EQC", "bodyType": "Electric SUV", "yearIntroduced": 2020, "yearDiscontinued": 2023 },
+      { "name": "EQE SUV", "bodyType": "Electric Luxury SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "EQS Sedan", "bodyType": "Electric Luxury Sedan", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "EQS SUV", "bodyType": "Electric Luxury SUV", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Audi",
+    "countryOfOrigin": "Germany",
+    "displayOrder": 20,
+    "models": [
+      { "name": "A3", "bodyType": "Sedan", "yearIntroduced": 2014, "yearDiscontinued": 2020 },
+      { "name": "A3 Cabriolet", "bodyType": "Convertible", "yearIntroduced": 2014, "yearDiscontinued": 2020 },
+      { "name": "A4", "bodyType": "Sedan", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "A6", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "A8 / A8 L", "bodyType": "Luxury Sedan", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "Q2", "bodyType": "Compact SUV", "yearIntroduced": 2020, "yearDiscontinued": 2022 },
+      { "name": "Q3", "bodyType": "Compact Luxury SUV", "yearIntroduced": 2012, "yearDiscontinued": null },
+      { "name": "Q3 Sportback", "bodyType": "Coupe SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Q5", "bodyType": "Luxury SUV", "yearIntroduced": 2009, "yearDiscontinued": null },
+      { "name": "Q7", "bodyType": "Luxury SUV", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "Q8", "bodyType": "Coupe Luxury SUV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "TT", "bodyType": "Sports Coupe", "yearIntroduced": 2008, "yearDiscontinued": 2020 },
+      { "name": "R8", "bodyType": "Supercar", "yearIntroduced": 2008, "yearDiscontinued": 2020 },
+      { "name": "S4", "bodyType": "Performance Sedan", "yearIntroduced": 2012, "yearDiscontinued": 2016 },
+      { "name": "S5 Sportback", "bodyType": "Performance Coupe", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "RS5", "bodyType": "Coupe / Sportback", "yearIntroduced": 2011, "yearDiscontinued": null },
+      { "name": "RS6 Avant", "bodyType": "Performance Estate", "yearIntroduced": 2015, "yearDiscontinued": 2019 },
+      { "name": "RS7 Sportback", "bodyType": "Super Sedan", "yearIntroduced": 2014, "yearDiscontinued": null },
+      { "name": "RS Q8", "bodyType": "Performance SUV", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "e-tron", "bodyType": "Electric SUV", "yearIntroduced": 2021, "yearDiscontinued": 2023 },
+      { "name": "Q8 e-tron", "bodyType": "Electric SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "Q8 Sportback e-tron", "bodyType": "Electric Coupe SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "e-tron GT", "bodyType": "Electric Super Sedan", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "RS e-tron GT", "bodyType": "Electric Super Sedan", "yearIntroduced": 2021, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Volvo",
+    "countryOfOrigin": "Sweden",
+    "displayOrder": 21,
+    "models": [
+      { "name": "S60", "bodyType": "Sedan", "yearIntroduced": 2011, "yearDiscontinued": 2022 },
+      { "name": "S60 Cross Country", "bodyType": "Crossover Sedan", "yearIntroduced": 2016, "yearDiscontinued": 2019 },
+      { "name": "S80", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": 2016 },
+      { "name": "S90", "bodyType": "Luxury Sedan", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "V40", "bodyType": "Hatchback", "yearIntroduced": 2015, "yearDiscontinued": 2019 },
+      { "name": "V40 Cross Country", "bodyType": "Crossover", "yearIntroduced": 2013, "yearDiscontinued": 2019 },
+      { "name": "V90 Cross Country", "bodyType": "Estate", "yearIntroduced": 2017, "yearDiscontinued": 2021 },
+      { "name": "XC40", "bodyType": "Compact Luxury SUV", "yearIntroduced": 2018, "yearDiscontinued": 2023 },
+      { "name": "XC40 Recharge (EX40)", "bodyType": "Electric SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "C40 Recharge (EC40)", "bodyType": "Electric Coupe SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "XC60", "bodyType": "Luxury SUV", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "XC90", "bodyType": "Luxury SUV", "yearIntroduced": 2007, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Jaguar",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 22,
+    "models": [
+      { "name": "X-Type", "bodyType": "Sedan", "yearIntroduced": 2003, "yearDiscontinued": 2009 },
+      { "name": "S-Type", "bodyType": "Sedan", "yearIntroduced": 2003, "yearDiscontinued": 2008 },
+      { "name": "XE", "bodyType": "Sedan", "yearIntroduced": 2016, "yearDiscontinued": 2021 },
+      { "name": "XF", "bodyType": "Sedan", "yearIntroduced": 2009, "yearDiscontinued": null },
+      { "name": "XJ / XJ L", "bodyType": "Luxury Sedan", "yearIntroduced": 2009, "yearDiscontinued": 2019 },
+      { "name": "XK / XKR", "bodyType": "Sports Coupe", "yearIntroduced": 2009, "yearDiscontinued": 2014 },
+      { "name": "F-Pace", "bodyType": "Luxury SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "E-Pace", "bodyType": "Compact Luxury SUV", "yearIntroduced": 2018, "yearDiscontinued": 2020 },
+      { "name": "F-Type", "bodyType": "Sports Car", "yearIntroduced": 2013, "yearDiscontinued": 2024 },
+      { "name": "I-Pace", "bodyType": "Electric SUV", "yearIntroduced": 2021, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Land Rover",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 23,
+    "models": [
+      { "name": "Freelander 2", "bodyType": "SUV", "yearIntroduced": 2009, "yearDiscontinued": 2015 },
+      { "name": "Discovery Sport", "bodyType": "SUV", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "Discovery (3/4/5)", "bodyType": "Fullsize SUV", "yearIntroduced": 2009, "yearDiscontinued": null },
+      { "name": "Range Rover Evoque", "bodyType": "Compact Luxury SUV", "yearIntroduced": 2011, "yearDiscontinued": null },
+      { "name": "Range Rover Velar", "bodyType": "Midsize Luxury SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "Range Rover Sport", "bodyType": "Luxury SUV", "yearIntroduced": 2009, "yearDiscontinued": null },
+      { "name": "Range Rover", "bodyType": "Flagship Luxury SUV", "yearIntroduced": 2009, "yearDiscontinued": null },
+      { "name": "Defender", "bodyType": "Off-road Luxury SUV", "yearIntroduced": 2020, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Porsche",
+    "countryOfOrigin": "Germany",
+    "displayOrder": 24,
+    "models": [
+      { "name": "Boxster", "bodyType": "Convertible", "yearIntroduced": 2007, "yearDiscontinued": 2016 },
+      { "name": "Cayman", "bodyType": "Sports Coupe", "yearIntroduced": 2007, "yearDiscontinued": 2016 },
+      { "name": "718 Boxster", "bodyType": "Convertible", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "718 Cayman", "bodyType": "Sports Coupe", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "911 (Carrera / Turbo / GT3)", "bodyType": "Sports Car", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "Panamera", "bodyType": "Luxury Sports Sedan", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "Macan", "bodyType": "Compact Luxury SUV", "yearIntroduced": 2014, "yearDiscontinued": null },
+      { "name": "Macan EV", "bodyType": "Electric SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "Cayenne", "bodyType": "Luxury SUV", "yearIntroduced": 2007, "yearDiscontinued": null },
+      { "name": "Cayenne Coupe", "bodyType": "Coupe SUV", "yearIntroduced": 2019, "yearDiscontinued": null },
+      { "name": "Taycan", "bodyType": "Electric Sports Sedan", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Taycan Cross Turismo", "bodyType": "Electric Crossover", "yearIntroduced": 2021, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Lexus",
+    "countryOfOrigin": "Japan",
+    "displayOrder": 25,
+    "models": [
+      { "name": "ES 300h", "bodyType": "Hybrid Luxury Sedan", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "NX 300h / 350h", "bodyType": "Hybrid Luxury SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "RX 450h / 350h / 500h", "bodyType": "Hybrid Luxury SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "LX 450d / 500d / 600", "bodyType": "Flagship Luxury SUV", "yearIntroduced": 2017, "yearDiscontinued": null },
+      { "name": "LS 500h", "bodyType": "Flagship Luxury Sedan", "yearIntroduced": 2018, "yearDiscontinued": null },
+      { "name": "LC 500h", "bodyType": "Luxury Sports Coupe", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "LM 350h", "bodyType": "Ultra Luxury MPV", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "MINI",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 26,
+    "models": [
+      { "name": "Cooper 3-Door", "bodyType": "Hatchback", "yearIntroduced": 2012, "yearDiscontinued": null },
+      { "name": "Cooper 5-Door", "bodyType": "Hatchback", "yearIntroduced": 2015, "yearDiscontinued": null },
+      { "name": "Cooper S", "bodyType": "Hot Hatch", "yearIntroduced": 2012, "yearDiscontinued": null },
+      { "name": "Cooper Convertible", "bodyType": "Convertible", "yearIntroduced": 2012, "yearDiscontinued": null },
+      { "name": "Clubman", "bodyType": "Estate", "yearIntroduced": 2016, "yearDiscontinued": 2022 },
+      { "name": "Countryman", "bodyType": "Compact SUV", "yearIntroduced": 2012, "yearDiscontinued": null },
+      { "name": "Cooper SE (Electric)", "bodyType": "Electric Hatchback", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "John Cooper Works (JCW)", "bodyType": "Performance Hatchback", "yearIntroduced": 2019, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Ford",
+    "countryOfOrigin": "United States",
+    "displayOrder": 27,
+    "models": [
+      { "name": "Escort", "bodyType": "Sedan", "yearIntroduced": 1996, "yearDiscontinued": 2001 },
+      { "name": "Ikon", "bodyType": "Sedan", "yearIntroduced": 1999, "yearDiscontinued": 2011 },
+      { "name": "Mondeo", "bodyType": "Sedan", "yearIntroduced": 2002, "yearDiscontinued": 2006 },
+      { "name": "Fusion", "bodyType": "Crossover", "yearIntroduced": 2004, "yearDiscontinued": 2010 },
+      { "name": "Fiesta", "bodyType": "Sedan", "yearIntroduced": 2005, "yearDiscontinued": 2015 },
+      { "name": "Fiesta Classic / Classic", "bodyType": "Sedan", "yearIntroduced": 2011, "yearDiscontinued": 2015 },
+      { "name": "Endeavour (Gen 1)", "bodyType": "SUV", "yearIntroduced": 2003, "yearDiscontinued": 2009 },
+      { "name": "Endeavour (Gen 2)", "bodyType": "SUV", "yearIntroduced": 2009, "yearDiscontinued": 2015 },
+      { "name": "Endeavour (Gen 3)", "bodyType": "SUV", "yearIntroduced": 2016, "yearDiscontinued": 2021 },
+      { "name": "Figo (Gen 1)", "bodyType": "Hatchback", "yearIntroduced": 2010, "yearDiscontinued": 2015 },
+      { "name": "Figo (Gen 2)", "bodyType": "Hatchback", "yearIntroduced": 2015, "yearDiscontinued": 2021 },
+      { "name": "Figo Aspire / Aspire", "bodyType": "Compact Sedan", "yearIntroduced": 2015, "yearDiscontinued": 2021 },
+      { "name": "EcoSport", "bodyType": "Compact SUV", "yearIntroduced": 2013, "yearDiscontinued": 2021 },
+      { "name": "Freestyle", "bodyType": "Crossover", "yearIntroduced": 2018, "yearDiscontinued": 2021 },
+      { "name": "Mustang GT", "bodyType": "Muscle Car", "yearIntroduced": 2016, "yearDiscontinued": 2021 }
+    ]
+  },
+  {
+    "name": "Chevrolet",
+    "countryOfOrigin": "United States",
+    "displayOrder": 28,
+    "models": [
+      { "name": "Tavera", "bodyType": "MUV", "yearIntroduced": 2004, "yearDiscontinued": 2017 },
+      { "name": "Optra", "bodyType": "Sedan", "yearIntroduced": 2003, "yearDiscontinued": 2012 },
+      { "name": "Optra SRV", "bodyType": "Hatchback", "yearIntroduced": 2006, "yearDiscontinued": 2009 },
+      { "name": "Optra Magnum", "bodyType": "Sedan", "yearIntroduced": 2007, "yearDiscontinued": 2012 },
+      { "name": "Aveo", "bodyType": "Sedan", "yearIntroduced": 2006, "yearDiscontinued": 2012 },
+      { "name": "Aveo U-VA", "bodyType": "Hatchback", "yearIntroduced": 2006, "yearDiscontinued": 2012 },
+      { "name": "Spark", "bodyType": "Hatchback", "yearIntroduced": 2007, "yearDiscontinued": 2017 },
+      { "name": "Captiva", "bodyType": "SUV", "yearIntroduced": 2008, "yearDiscontinued": 2016 },
+      { "name": "Cruze", "bodyType": "Sedan", "yearIntroduced": 2009, "yearDiscontinued": 2017 },
+      { "name": "Beat", "bodyType": "Hatchback", "yearIntroduced": 2010, "yearDiscontinued": 2017 },
+      { "name": "Sail", "bodyType": "Sedan", "yearIntroduced": 2013, "yearDiscontinued": 2017 },
+      { "name": "Sail U-VA", "bodyType": "Hatchback", "yearIntroduced": 2012, "yearDiscontinued": 2017 },
+      { "name": "Enjoy", "bodyType": "MPV", "yearIntroduced": 2013, "yearDiscontinued": 2017 },
+      { "name": "Trailblazer", "bodyType": "SUV", "yearIntroduced": 2015, "yearDiscontinued": 2017 }
+    ]
+  },
+  {
+    "name": "Fiat",
+    "countryOfOrigin": "Italy",
+    "displayOrder": 29,
+    "models": [
+      { "name": "Uno", "bodyType": "Hatchback", "yearIntroduced": 1996, "yearDiscontinued": 2002 },
+      { "name": "Siena", "bodyType": "Sedan", "yearIntroduced": 1999, "yearDiscontinued": 2004 },
+      { "name": "Palio", "bodyType": "Hatchback", "yearIntroduced": 2001, "yearDiscontinued": 2010 },
+      { "name": "Palio Weekend", "bodyType": "Estate", "yearIntroduced": 2002, "yearDiscontinued": 2006 },
+      { "name": "Palio Adventure", "bodyType": "Crossover Estate", "yearIntroduced": 2002, "yearDiscontinued": 2007 },
+      { "name": "Petra", "bodyType": "Sedan", "yearIntroduced": 2004, "yearDiscontinued": 2008 },
+      { "name": "500", "bodyType": "Hatchback", "yearIntroduced": 2008, "yearDiscontinued": 2013 },
+      { "name": "Grande Punto", "bodyType": "Hatchback", "yearIntroduced": 2009, "yearDiscontinued": 2014 },
+      { "name": "Punto Evo", "bodyType": "Hatchback", "yearIntroduced": 2014, "yearDiscontinued": 2019 },
+      { "name": "Punto Pure", "bodyType": "Hatchback", "yearIntroduced": 2016, "yearDiscontinued": 2017 },
+      { "name": "Linea", "bodyType": "Sedan", "yearIntroduced": 2009, "yearDiscontinued": 2019 },
+      { "name": "Linea Classic", "bodyType": "Sedan", "yearIntroduced": 2013, "yearDiscontinued": 2017 },
+      { "name": "Avventura", "bodyType": "Crossover", "yearIntroduced": 2014, "yearDiscontinued": 2019 },
+      { "name": "Urban Cross", "bodyType": "Crossover", "yearIntroduced": 2016, "yearDiscontinued": 2019 },
+      { "name": "Abarth Punto", "bodyType": "Hot Hatch", "yearIntroduced": 2015, "yearDiscontinued": 2019 },
+      { "name": "Abarth 595 Competizione", "bodyType": "Hot Hatch", "yearIntroduced": 2015, "yearDiscontinued": 2019 }
+    ]
+  },
+  {
+    "name": "Datsun",
+    "countryOfOrigin": "Japan",
+    "displayOrder": 30,
+    "models": [
+      { "name": "GO", "bodyType": "Hatchback", "yearIntroduced": 2014, "yearDiscontinued": 2022 },
+      { "name": "GO+", "bodyType": "Compact MPV", "yearIntroduced": 2015, "yearDiscontinued": 2022 },
+      { "name": "redi-GO", "bodyType": "Hatchback", "yearIntroduced": 2016, "yearDiscontinued": 2022 }
+    ]
+  },
+  {
+    "name": "Mitsubishi",
+    "countryOfOrigin": "Japan",
+    "displayOrder": 31,
+    "models": [
+      { "name": "Lancer", "bodyType": "Sedan", "yearIntroduced": 1998, "yearDiscontinued": 2012 },
+      { "name": "Pajero (SFX / GLX)", "bodyType": "SUV", "yearIntroduced": 2002, "yearDiscontinued": 2012 },
+      { "name": "Cedia", "bodyType": "Sedan", "yearIntroduced": 2006, "yearDiscontinued": 2013 },
+      { "name": "Montero", "bodyType": "SUV", "yearIntroduced": 2007, "yearDiscontinued": 2018 },
+      { "name": "Outlander", "bodyType": "SUV", "yearIntroduced": 2008, "yearDiscontinued": 2020 },
+      { "name": "Lancer Evolution X", "bodyType": "Sports Sedan", "yearIntroduced": 2010, "yearDiscontinued": 2013 },
+      { "name": "Pajero Sport", "bodyType": "SUV", "yearIntroduced": 2012, "yearDiscontinued": 2020 }
+    ]
+  },
+  {
+    "name": "Daewoo",
+    "countryOfOrigin": "South Korea",
+    "displayOrder": 32,
+    "models": [
+      { "name": "Cielo", "bodyType": "Sedan", "yearIntroduced": 1995, "yearDiscontinued": 1999 },
+      { "name": "Nexia", "bodyType": "Sedan", "yearIntroduced": 1996, "yearDiscontinued": 1999 },
+      { "name": "Matiz", "bodyType": "Hatchback", "yearIntroduced": 1998, "yearDiscontinued": 2002 }
+    ]
+  },
+  {
+    "name": "Opel",
+    "countryOfOrigin": "Germany",
+    "displayOrder": 33,
+    "models": [
+      { "name": "Astra", "bodyType": "Sedan", "yearIntroduced": 1996, "yearDiscontinued": 2003 },
+      { "name": "Corsa", "bodyType": "Sedan", "yearIntroduced": 2000, "yearDiscontinued": 2006 },
+      { "name": "Corsa Sail", "bodyType": "Hatchback", "yearIntroduced": 2003, "yearDiscontinued": 2006 },
+      { "name": "Corsa Swing", "bodyType": "Estate", "yearIntroduced": 2001, "yearDiscontinued": 2005 },
+      { "name": "Vectra", "bodyType": "Sedan", "yearIntroduced": 2002, "yearDiscontinued": 2005 }
+    ]
+  },
+  {
+    "name": "Hindustan Motors",
+    "countryOfOrigin": "India",
+    "displayOrder": 34,
+    "models": [
+      { "name": "Ambassador", "bodyType": "Sedan", "yearIntroduced": 1958, "yearDiscontinued": 2014 },
+      { "name": "Contessa", "bodyType": "Sedan", "yearIntroduced": 1984, "yearDiscontinued": 2002 },
+      { "name": "Trekker", "bodyType": "MUV", "yearIntroduced": 1980, "yearDiscontinued": 2000 }
+    ]
+  },
+  {
+    "name": "Premier",
+    "countryOfOrigin": "India",
+    "displayOrder": 35,
+    "models": [
+      { "name": "Padmini", "bodyType": "Sedan", "yearIntroduced": 1964, "yearDiscontinued": 2000 },
+      { "name": "118 NE", "bodyType": "Sedan", "yearIntroduced": 1985, "yearDiscontinued": 2001 },
+      { "name": "137 D", "bodyType": "Sedan", "yearIntroduced": 1993, "yearDiscontinued": 2001 },
+      { "name": "Rio", "bodyType": "Compact SUV", "yearIntroduced": 2009, "yearDiscontinued": 2015 }
+    ]
+  },
+  {
+    "name": "Tesla",
+    "countryOfOrigin": "United States",
+    "displayOrder": 36,
+    "models": [
+      { "name": "Model 3", "bodyType": "Electric Sedan", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Model Y", "bodyType": "Electric SUV", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "Model S", "bodyType": "Electric Luxury Sedan", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "Model X", "bodyType": "Electric Luxury SUV", "yearIntroduced": 2020, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "VinFast",
+    "countryOfOrigin": "Vietnam",
+    "displayOrder": 37,
+    "models": [
+      { "name": "VF 3", "bodyType": "Electric Micro SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "VF 6", "bodyType": "Electric Compact SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "VF 7", "bodyType": "Electric Midsize SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "VF 8", "bodyType": "Electric SUV", "yearIntroduced": 2024, "yearDiscontinued": null },
+      { "name": "VF e34", "bodyType": "Electric Crossover", "yearIntroduced": 2024, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Ferrari",
+    "countryOfOrigin": "Italy",
+    "displayOrder": 38,
+    "models": [
+      { "name": "California / California T", "bodyType": "Grand Tourer", "yearIntroduced": 2009, "yearDiscontinued": 2018 },
+      { "name": "458 Italia", "bodyType": "Supercar", "yearIntroduced": 2010, "yearDiscontinued": 2015 },
+      { "name": "488 GTB / Spider", "bodyType": "Supercar", "yearIntroduced": 2015, "yearDiscontinued": 2019 },
+      { "name": "F8 Tributo", "bodyType": "Supercar", "yearIntroduced": 2019, "yearDiscontinued": 2023 },
+      { "name": "Portofino / Portofino M", "bodyType": "Convertible GT", "yearIntroduced": 2018, "yearDiscontinued": 2023 },
+      { "name": "Roma", "bodyType": "Coupe GT", "yearIntroduced": 2020, "yearDiscontinued": null },
+      { "name": "296 GTB", "bodyType": "Hybrid Supercar", "yearIntroduced": 2022, "yearDiscontinued": null },
+      { "name": "812 Superfast / GTS", "bodyType": "V12 Supercar", "yearIntroduced": 2017, "yearDiscontinued": 2024 },
+      { "name": "Purosangue", "bodyType": "Luxury SUV", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Lamborghini",
+    "countryOfOrigin": "Italy",
+    "displayOrder": 39,
+    "models": [
+      { "name": "Gallardo", "bodyType": "Supercar", "yearIntroduced": 2005, "yearDiscontinued": 2013 },
+      { "name": "Murcielago", "bodyType": "V12 Supercar", "yearIntroduced": 2005, "yearDiscontinued": 2010 },
+      { "name": "Aventador", "bodyType": "V12 Supercar", "yearIntroduced": 2011, "yearDiscontinued": 2022 },
+      { "name": "Huracan", "bodyType": "V10 Supercar", "yearIntroduced": 2014, "yearDiscontinued": 2024 },
+      { "name": "Urus", "bodyType": "Super SUV", "yearIntroduced": 2018, "yearDiscontinued": null },
+      { "name": "Revuelto", "bodyType": "Hybrid V12 Supercar", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Bentley",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 40,
+    "models": [
+      { "name": "Arnage", "bodyType": "Luxury Sedan", "yearIntroduced": 2003, "yearDiscontinued": 2009 },
+      { "name": "Continental GT", "bodyType": "Grand Tourer", "yearIntroduced": 2004, "yearDiscontinued": null },
+      { "name": "Flying Spur", "bodyType": "Luxury Sedan", "yearIntroduced": 2005, "yearDiscontinued": null },
+      { "name": "Mulsanne", "bodyType": "Flagship Luxury Sedan", "yearIntroduced": 2010, "yearDiscontinued": 2020 },
+      { "name": "Bentayga", "bodyType": "Luxury SUV", "yearIntroduced": 2016, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Rolls-Royce",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 41,
+    "models": [
+      { "name": "Phantom", "bodyType": "Flagship Luxury Sedan", "yearIntroduced": 2005, "yearDiscontinued": null },
+      { "name": "Ghost", "bodyType": "Luxury Sedan", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "Wraith", "bodyType": "Luxury Coupe", "yearIntroduced": 2013, "yearDiscontinued": 2023 },
+      { "name": "Dawn", "bodyType": "Luxury Convertible", "yearIntroduced": 2016, "yearDiscontinued": 2023 },
+      { "name": "Cullinan", "bodyType": "Ultra Luxury SUV", "yearIntroduced": 2018, "yearDiscontinued": null },
+      { "name": "Spectre", "bodyType": "Electric Luxury Coupe", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Aston Martin",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 42,
+    "models": [
+      { "name": "Vantage", "bodyType": "Sports Coupe", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "DB9", "bodyType": "Grand Tourer", "yearIntroduced": 2008, "yearDiscontinued": 2016 },
+      { "name": "DBS", "bodyType": "Super GT", "yearIntroduced": 2008, "yearDiscontinued": 2023 },
+      { "name": "Rapide", "bodyType": "4-Door Sports Sedan", "yearIntroduced": 2010, "yearDiscontinued": 2020 },
+      { "name": "DB11", "bodyType": "Grand Tourer", "yearIntroduced": 2016, "yearDiscontinued": 2023 },
+      { "name": "DB12", "bodyType": "Super Tourer", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "DBX", "bodyType": "Luxury SUV", "yearIntroduced": 2020, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "Maserati",
+    "countryOfOrigin": "Italy",
+    "displayOrder": 43,
+    "models": [
+      { "name": "Quattroporte", "bodyType": "Luxury Sedan", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "GranTurismo", "bodyType": "Sports Coupe", "yearIntroduced": 2008, "yearDiscontinued": null },
+      { "name": "GranCabrio", "bodyType": "Convertible", "yearIntroduced": 2010, "yearDiscontinued": null },
+      { "name": "Ghibli", "bodyType": "Sports Sedan", "yearIntroduced": 2014, "yearDiscontinued": 2024 },
+      { "name": "Levante", "bodyType": "Luxury SUV", "yearIntroduced": 2016, "yearDiscontinued": null },
+      { "name": "Grecale", "bodyType": "Luxury SUV", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "MC20", "bodyType": "Supercar", "yearIntroduced": 2022, "yearDiscontinued": null }
+    ]
+  },
+  {
+    "name": "McLaren",
+    "countryOfOrigin": "United Kingdom",
+    "displayOrder": 44,
+    "models": [
+      { "name": "GT", "bodyType": "Grand Tourer", "yearIntroduced": 2021, "yearDiscontinued": null },
+      { "name": "Artura", "bodyType": "Hybrid Supercar", "yearIntroduced": 2023, "yearDiscontinued": null },
+      { "name": "720S", "bodyType": "Supercar", "yearIntroduced": 2021, "yearDiscontinued": 2023 },
+      { "name": "750S", "bodyType": "Supercar", "yearIntroduced": 2023, "yearDiscontinued": null }
+    ]
+  }
+]

@@ -53,6 +53,84 @@ public class GlobalExceptionHandler {
                                                                 null));
         }
 
+        @ExceptionHandler(VehicleAlreadyExistsException.class)
+        public ResponseEntity<ApiResponse<Void>> handleVehicleAlreadyExists(
+                        VehicleAlreadyExistsException exception) {
+
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT)
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
+        @ExceptionHandler(ServiceCatalogAlreadyExistsException.class)
+        public ResponseEntity<ApiResponse<Void>> handleServiceCatalogAlreadyExists(
+                        ServiceCatalogAlreadyExistsException exception) {
+
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT)
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
+        @ExceptionHandler(BookingConflictException.class)
+        public ResponseEntity<ApiResponse<Void>> handleBookingConflict(
+                        BookingConflictException exception) {
+
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT)
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
+        @ExceptionHandler(InvalidBookingStateException.class)
+        public ResponseEntity<ApiResponse<Void>> handleInvalidBookingState(
+                        InvalidBookingStateException exception) {
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(
+                        IllegalArgumentException exception) {
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
+        @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+        public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadable(
+                        org.springframework.http.converter.HttpMessageNotReadableException exception) {
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                "Malformed or invalid request payload",
+                                                                null));
+        }
+
         @ExceptionHandler(MethodArgumentNotValidException.class)
         public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
                         MethodArgumentNotValidException exception) {
