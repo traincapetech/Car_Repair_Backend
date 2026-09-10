@@ -1,9 +1,11 @@
 package com.carservice.backend.servicecatalog.entity;
 
+import com.carservice.backend.servicecatalog.enums.DiscountType;
 import com.carservice.backend.servicecatalog.enums.ServiceCategory;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +36,13 @@ public class ServiceCatalog {
     @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal basePrice;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type", nullable = false, length = 30)
+    private DiscountType discountType = DiscountType.NO_DISCOUNT;
+
+    @Column(name = "discount_value", nullable = false, precision = 10, scale = 2)
+    private BigDecimal discountValue = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+
     @Column(name = "estimated_duration_minutes", nullable = false)
     private Integer estimatedDurationMinutes;
 
@@ -57,12 +66,71 @@ public class ServiceCatalog {
             Integer estimatedDurationMinutes,
             Boolean isActive
     ) {
+        this(name, description, category, basePrice, DiscountType.NO_DISCOUNT, BigDecimal.ZERO, estimatedDurationMinutes, isActive);
+    }
+
+    public ServiceCatalog(
+            String name,
+            String description,
+            ServiceCategory category,
+            BigDecimal basePrice,
+            DiscountType discountType,
+            BigDecimal discountValue,
+            Integer estimatedDurationMinutes,
+            Boolean isActive
+    ) {
         this.name = name;
         this.description = description;
         this.category = category;
-        this.basePrice = basePrice;
+        this.basePrice = basePrice != null ? basePrice.setScale(2, RoundingMode.HALF_UP) : null;
+        this.discountType = discountType != null ? discountType : DiscountType.NO_DISCOUNT;
+        this.discountValue = discountValue != null ? discountValue.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         this.estimatedDurationMinutes = estimatedDurationMinutes;
         this.isActive = isActive != null ? isActive : true;
+        validateDiscount();
+    }
+
+    public void validateDiscount() {
+        if (this.basePrice != null && this.basePrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Base price cannot be negative");
+        }
+        if (this.discountValue != null && this.discountValue.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Discount value cannot be negative");
+        }
+        if (this.discountType == DiscountType.PERCENTAGE) {
+            if (this.discountValue != null && this.discountValue.compareTo(BigDecimal.valueOf(100)) > 0) {
+                throw new IllegalArgumentException("Percentage discount cannot exceed 100%");
+            }
+        } else if (this.discountType == DiscountType.FIXED_AMOUNT) {
+            if (this.basePrice != null && this.discountValue != null && this.discountValue.compareTo(this.basePrice) > 0) {
+                throw new IllegalArgumentException("Fixed discount cannot exceed base price");
+            }
+        }
+    }
+
+    public BigDecimal calculateFinalPrice() {
+        if (this.basePrice == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        if (this.discountType == null || this.discountType == DiscountType.NO_DISCOUNT || this.discountValue == null) {
+            return this.basePrice.setScale(2, RoundingMode.HALF_UP);
+        }
+        if (this.discountType == DiscountType.PERCENTAGE) {
+            BigDecimal discountAmount = this.basePrice
+                    .multiply(this.discountValue)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            BigDecimal finalPrice = this.basePrice.subtract(discountAmount);
+            return finalPrice.compareTo(BigDecimal.ZERO) < 0
+                    ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
+                    : finalPrice.setScale(2, RoundingMode.HALF_UP);
+        }
+        if (this.discountType == DiscountType.FIXED_AMOUNT) {
+            BigDecimal finalPrice = this.basePrice.subtract(this.discountValue);
+            return finalPrice.compareTo(BigDecimal.ZERO) < 0
+                    ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
+                    : finalPrice.setScale(2, RoundingMode.HALF_UP);
+        }
+        return this.basePrice.setScale(2, RoundingMode.HALF_UP);
     }
 
     @PrePersist
@@ -73,11 +141,25 @@ public class ServiceCatalog {
         if (this.isActive == null) {
             this.isActive = true;
         }
+        if (this.discountType == null) {
+            this.discountType = DiscountType.NO_DISCOUNT;
+        }
+        if (this.discountValue == null) {
+            this.discountValue = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        validateDiscount();
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+        if (this.discountType == null) {
+            this.discountType = DiscountType.NO_DISCOUNT;
+        }
+        if (this.discountValue == null) {
+            this.discountValue = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        validateDiscount();
     }
 
     public Long getId() {
@@ -117,7 +199,23 @@ public class ServiceCatalog {
     }
 
     public void setBasePrice(BigDecimal basePrice) {
-        this.basePrice = basePrice;
+        this.basePrice = basePrice != null ? basePrice.setScale(2, RoundingMode.HALF_UP) : null;
+    }
+
+    public DiscountType getDiscountType() {
+        return discountType;
+    }
+
+    public void setDiscountType(DiscountType discountType) {
+        this.discountType = discountType != null ? discountType : DiscountType.NO_DISCOUNT;
+    }
+
+    public BigDecimal getDiscountValue() {
+        return discountValue;
+    }
+
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue != null ? discountValue.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
     }
 
     public Integer getEstimatedDurationMinutes() {

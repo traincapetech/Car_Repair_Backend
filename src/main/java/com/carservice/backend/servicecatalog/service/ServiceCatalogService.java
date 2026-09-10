@@ -38,8 +38,15 @@ public class ServiceCatalogService {
         service.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
         service.setCategory(request.getCategory());
         service.setBasePrice(request.getBasePrice());
+        if (request.getDiscountType() != null) {
+            service.setDiscountType(request.getDiscountType());
+        }
+        if (request.getDiscountValue() != null) {
+            service.setDiscountValue(request.getDiscountValue());
+        }
         service.setEstimatedDurationMinutes(request.getEstimatedDurationMinutes());
         service.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
+        service.validateDiscount();
 
         ServiceCatalog saved = serviceCatalogRepository.save(service);
         return ServiceCatalogResponse.fromEntity(saved);
@@ -90,10 +97,17 @@ public class ServiceCatalogService {
         service.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
         service.setCategory(request.getCategory());
         service.setBasePrice(request.getBasePrice());
+        if (request.getDiscountType() != null) {
+            service.setDiscountType(request.getDiscountType());
+        }
+        if (request.getDiscountValue() != null) {
+            service.setDiscountValue(request.getDiscountValue());
+        }
         service.setEstimatedDurationMinutes(request.getEstimatedDurationMinutes());
         if (request.getIsActive() != null) {
             service.setIsActive(request.getIsActive());
         }
+        service.validateDiscount();
 
         ServiceCatalog updated = serviceCatalogRepository.save(service);
         return ServiceCatalogResponse.fromEntity(updated);

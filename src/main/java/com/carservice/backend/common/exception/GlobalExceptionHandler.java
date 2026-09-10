@@ -105,6 +105,19 @@ public class GlobalExceptionHandler {
                                                                 null));
         }
 
+        @ExceptionHandler(InvalidBookingException.class)
+        public ResponseEntity<ApiResponse<Void>> handleInvalidBooking(
+                        InvalidBookingException exception) {
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
         @ExceptionHandler(IllegalArgumentException.class)
         public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(
                         IllegalArgumentException exception) {

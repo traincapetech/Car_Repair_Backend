@@ -1,0 +1,177 @@
+[
+  {
+    "name": "Basic Periodic Service",
+    "category": "PERIODIC_SERVICE",
+    "basePrice": 1499.00,
+    "estimatedDurationMinutes": 90,
+    "description": "Recommended every 5,000 kms or 3 months. Essential lubrication and inspection to keep your engine running smoothly. Includes Engine Oil Replacement, Oil Filter Replacement, Air Filter Cleaning, Wiper Fluid Top-up, Coolant Level Inspection, and 15-Point General Safety Health Check."
+  },
+  {
+    "name": "Standard Periodic Maintenance",
+    "category": "PERIODIC_SERVICE",
+    "basePrice": 2999.00,
+    "estimatedDurationMinutes": 180,
+    "description": "Recommended every 10,000 kms or 6 months. Complete preventive maintenance covering essential fluids, filters, and safety points. Includes Synthetic Engine Oil Replacement, Oil Filter Replacement, Engine Air Filter Replacement, Coolant Top-Up, Battery Water Top-up, Spark Plug Cleaning, Brake Pad Inspection, and 40-Point Comprehensive Inspection with Car Wash."
+  },
+  {
+    "name": "Comprehensive Annual Service",
+    "category": "PERIODIC_SERVICE",
+    "basePrice": 4999.00,
+    "estimatedDurationMinutes": 240,
+    "description": "Recommended every 20,000 kms or 12 months. Master full-body service for maximum longevity and peace of mind. Includes Fully Synthetic Engine Oil, Oil Filter, Air Filter, Cabin AC Filter Replacement, Brake Fluid Flush (DOT 4), Throttle Body Cleaning, Wheel Alignment & Balancing, and Deep Foam Wash with Interior Vacuuming."
+  },
+  {
+    "name": "Regular AC Service & Gas Top-Up",
+    "category": "AC_SERVICE",
+    "basePrice": 1299.00,
+    "estimatedDurationMinutes": 60,
+    "description": "Ideal pre-summer tune-up for mild cooling loss and cabin odors. Includes AC Gas Top-Up (R134a up to 400g), Cabin AC Filter Cleaning, AC Condenser Water Jet Wash, Dashboard Vent Sanitation, and Cooling Vent Temperature Check."
+  },
+  {
+    "name": "High Performance AC Overhaul",
+    "category": "AC_SERVICE",
+    "basePrice": 2499.00,
+    "estimatedDurationMinutes": 120,
+    "description": "Deep-cycle AC servicing for severe cooling drop or compressor noise. Includes 100% AC Gas Evacuation & Recharge, Compressor Oil Refill, Cooling Coil Deep Chemical Cleaning, Evaporator Core Inspection, UV Leakage Diagnostic, and Antibacterial Duct Ozone Treatment."
+  },
+  {
+    "name": "AC Cooling Diagnostic & Leak Test",
+    "category": "AC_SERVICE",
+    "basePrice": 499.00,
+    "estimatedDurationMinutes": 45,
+    "description": "Troubleshoots weak cooling, unusual cabin odors, or AC tripping. Includes Nitrogen Pressure Leak Test, Compressor Clutch & Relay Inspection, Drive Belt Tension Inspection, and Cabin Temp Sensor Testing."
+  },
+  {
+    "name": "Tyre Puncture & Stepney Assistance",
+    "category": "TYRE_SERVICE",
+    "basePrice": 499.00,
+    "estimatedDurationMinutes": 45,
+    "description": "Doorstep roadside emergency assistance for flat tyre repairs. Includes Tubeless Tyre Puncture Repair (up to 2 punctures), Tyre Stepney Wheel Swap, Tyre Pressure & Valve Inspection, and Tread Depth Safety Check."
+  },
+  {
+    "name": "3D Wheel Alignment & Dynamic Balancing",
+    "category": "WHEEL_ALIGNMENT",
+    "basePrice": 699.00,
+    "estimatedDurationMinutes": 60,
+    "description": "Eliminates steering pull, uneven tyre wear, and highway vibrations. Includes 3D Computerized Laser Alignment (Front & Rear), High-Speed Dynamic Wheel Balancing, Precision Balance Lead Weights (up to 100g), 4-Tyre Rotation, and Nitrogen Inflation."
+  },
+  {
+    "name": "Complete Tyre Replacement & Fitment",
+    "category": "TYRE_SERVICE",
+    "basePrice": 3499.00,
+    "estimatedDurationMinutes": 60,
+    "description": "Brand new OEM specification radial tyre with manufacturer warranty. Includes Brand New Radial Tyre, Professional Rim Mounting, Wheel Dynamic Balancing, New Tubeless Valve Replacement, and Free Old Tyre Disposal."
+  },
+  {
+    "name": "Emergency Battery Jumpstart Assistance",
+    "category": "BATTERY_SERVICE",
+    "basePrice": 499.00,
+    "estimatedDurationMinutes": 30,
+    "description": "Rapid mobile response when your car won't crank. Includes Rapid Mobile Jumpstart Unit Dispatch, Alternator Output Charging Test, Battery Terminal De-Corrosion & Greasing, and Parasitic Drain Electrical Check."
+  },
+  {
+    "name": "Amaron / Exide OEM Battery Replacement",
+    "category": "BATTERY_SERVICE",
+    "basePrice": 4499.00,
+    "estimatedDurationMinutes": 45,
+    "description": "100% genuine zero-maintenance automotive battery with manufacturer warranty card. Includes Brand New OEM Maintenance-Free Battery (35Ah-45Ah), 55-Month Manufacturer Warranty, Free Doorstep Installation, and Old Battery Buyback Rebate Applied."
+  },
+  {
+    "name": "Front Brake Pads Replacement",
+    "category": "BRAKE_SERVICE",
+    "basePrice": 1599.00,
+    "estimatedDurationMinutes": 60,
+    "description": "High-friction OE-grade brake pads ensuring reliable stopping distance and quiet braking. Includes Genuine OE Front Brake Pads (Set of 4), Brake Disc Rotor Cleaning & Skimming Inspection, Caliper Slider Pin Cleaning & Synthetic Greasing, and Brake Fluid Level Top-Up."
+  },
+  {
+    "name": "Rear Brake Shoes & Drum Service",
+    "category": "BRAKE_SERVICE",
+    "basePrice": 1199.00,
+    "estimatedDurationMinutes": 60,
+    "description": "Essential for rear braking balance, parking brake grip, and eliminating rear squealing noise. Includes Rear Brake Drum Removal & Inspection, Brake Shoe Lining Adjustment, Drum Surface Cleaning, and Handbrake Cable Tension Calibration."
+  },
+  {
+    "name": "Complete Brake Fluid Flush & Bleeding",
+    "category": "BRAKE_SERVICE",
+    "basePrice": 899.00,
+    "estimatedDurationMinutes": 45,
+    "description": "Restores firm brake pedal feel and prevents hydraulic brake fade. Includes Complete Old Fluid Evacuation, Premium DOT 4 Synthetic Brake Fluid Flush, 4-Wheel Hydraulic Line Bleeding, and Master Cylinder Reservoir Inspection."
+  },
+  {
+    "name": "Deep Interior Spa & Sanitization",
+    "category": "DETAILING",
+    "basePrice": 1499.00,
+    "estimatedDurationMinutes": 150,
+    "description": "Removes stubborn stains, allergens, and odors for a showroom-clean interior cabin. Includes Deep Wet Vacuuming of Fabric/Leather Seats, Roof Fabric Dry Cleaning, Dashboard & Console Dressing with UV Protectant, Door Pads & AC Vent Detailing, and Trunk Anti-Bacterial Sanitization."
+  },
+  {
+    "name": "Exterior Foam Wash & 3M Carnauba Wax",
+    "category": "DETAILING",
+    "basePrice": 1299.00,
+    "estimatedDurationMinutes": 90,
+    "description": "Restores deep gloss, repels rain, and protects car paint from UV oxidation. Includes High-Pressure Underbody Wash, 3-Stage Snow Foam Wash, Alloy Wheel & Tyre Dressing, Dual-Action Orbital Machine Buffing, and 3M High-Gloss Carnauba Wax Application."
+  },
+  {
+    "name": "Full Ceramic Coating (9H Armor)",
+    "category": "DETAILING",
+    "basePrice": 14999.00,
+    "estimatedDurationMinutes": 480,
+    "description": "Ultra-durable ceramic glass shield protecting against light scratches, acid rain, bird lime, and paint fade. Includes Clay Bar Paint Decontamination, 2-Step Machine Paint Correction & Swirl Removal, 9H Nano-Ceramic Double Coating (Body, Headlights & Alloys), Hydrophobic Water-Repellent Shield, and 3-Year Official Warranty."
+  },
+  {
+    "name": "OBD-II Computerized Engine Scan",
+    "category": "DIAGNOSTICS",
+    "basePrice": 699.00,
+    "estimatedDurationMinutes": 45,
+    "description": "Professional scan tool diagnosis to decode check-engine lights, sensor glitches, and electrical faults. Includes Full ECU Computerized Diagnostics Scan, Fault Code (DTC) Reading & Interpretation, Live Sensor Telemetry Verification (O2, MAF, TPS), and Diagnostic Fault Clear with Health Report."
+  },
+  {
+    "name": "Engine Carbon Cleaning & Throttle De-Carb",
+    "category": "ENGINE_SERVICE",
+    "basePrice": 1899.00,
+    "estimatedDurationMinutes": 90,
+    "description": "Restores engine responsiveness, smoother idling, and reduced exhaust emissions. Includes Electronic Throttle Body Cleaning, Intake Manifold Chemical Flush, Spark Plug Clean & Gap Adjustment, and Fuel Injector Cleaner Additive."
+  },
+  {
+    "name": "Engine Coolant Flush & Radiator Service",
+    "category": "ENGINE_SERVICE",
+    "basePrice": 1099.00,
+    "estimatedDurationMinutes": 60,
+    "description": "Prevents engine overheating and internal rust in cooling jackets. Includes Complete Radiator Chemical Flush, Heavy-Duty Long-Life Coolant Refill (up to 4 Litres), Radiator Cap Pressure Test, and Thermostat Operation Check."
+  },
+  {
+    "name": "Emergency Fuel Assistance (Doorstep)",
+    "category": "GENERAL_SERVICE",
+    "basePrice": 499.00,
+    "estimatedDurationMinutes": 45,
+    "description": "Stuck on the road with an empty fuel tank? Rapid roadside delivery gets you moving again. Includes Emergency Fuel Delivery Dispatch (up to 5 Litres Petrol/Diesel, fuel cost at pump rate), Fuel Line Air Lock Release, and Restart Assistance."
+  },
+  {
+    "name": "Pre-Purchase Comprehensive 100-Point Inspection",
+    "category": "GENERAL_SERVICE",
+    "basePrice": 1299.00,
+    "estimatedDurationMinutes": 90,
+    "description": "Unbiased certified master mechanic inspection before buying or selling a pre-owned car. Includes 100-Point Physical & Mechanical Inspection, Engine Compression & Oil Health Check, Accidental Damage & Repaint Thickness Meter Test, and Complete Digital PDF Report with Photos."
+  },
+  {
+    "name": "Front Bumper Denting & Painting (Single Panel)",
+    "category": "GENERAL_SERVICE",
+    "basePrice": 1999.00,
+    "estimatedDurationMinutes": 240,
+    "description": "Professional OEM-grade scratch and dent repair with computerized color matching. Includes Dent Pulling & Surface Leveling, Anti-Corrosion Primer, 3-Coat Computerized Color Match Paint, High-Gloss Clear Lacquer Coat, and 2-Year Color Fade Warranty."
+  },
+  {
+    "name": "Complete Clutch Overhaul & Replacement",
+    "category": "ENGINE_SERVICE",
+    "basePrice": 4499.00,
+    "estimatedDurationMinutes": 240,
+    "description": "Restores crisp gear shifting, eliminates clutch slippage, and improves pickup. Includes OEM Clutch Plate & Pressure Plate Replacement, Release Bearing Replacement, Flywheel Inspection & Facing, and Clutch Cable / Hydraulic Bleeding."
+  },
+  {
+    "name": "Suspension Overhaul & Bushing Kit",
+    "category": "GENERAL_SERVICE",
+    "basePrice": 3799.00,
+    "estimatedDurationMinutes": 210,
+    "description": "Eliminates thudding noises over speed bumps and restores smooth ride quality. Includes Lower Arm Bushing Replacement, Link Rods & Stabilizer Bar Greasing, Strut Mount Bearing Inspection, and Shock Absorber Health Diagnostic."
+  }
+]

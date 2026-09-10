@@ -1,52 +1,81 @@
 package com.carservice.backend.booking.dto;
 
 import com.carservice.backend.booking.entity.Booking;
+import com.carservice.backend.booking.entity.BookingService;
 import com.carservice.backend.booking.enums.BookingStatus;
+import com.carservice.backend.servicecatalog.enums.DiscountType;
 import com.carservice.backend.servicecatalog.enums.ServiceCategory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookingResponse {
 
     private Long id;
+    private String bookingReference;
     private VehicleSummary vehicle;
-    private ServiceSummary service;
+    private List<BookingServiceItemResponse> services = new ArrayList<>();
+    private BigDecimal totalAmount;
     private LocalDate bookingDate;
     private LocalTime bookingTime;
+    private String timeSlot;
     private BookingStatus status;
     private String customerNotes;
-    private BigDecimal estimatedPrice;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime cancelledAt;
+
+    // Backward compatibility fields:
+    private ServiceSummary service;
+    private String serviceNameSnapshot;
+    private BigDecimal servicePriceSnapshot;
+    private BigDecimal estimatedPrice;
+    private BigDecimal price;
 
     public BookingResponse() {
     }
 
     public BookingResponse(
             Long id,
+            String bookingReference,
             VehicleSummary vehicle,
+            List<BookingServiceItemResponse> services,
+            BigDecimal totalAmount,
             ServiceSummary service,
+            String serviceNameSnapshot,
+            BigDecimal servicePriceSnapshot,
+            BigDecimal estimatedPrice,
             LocalDate bookingDate,
             LocalTime bookingTime,
+            String timeSlot,
             BookingStatus status,
             String customerNotes,
-            BigDecimal estimatedPrice,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            LocalDateTime cancelledAt
     ) {
         this.id = id;
+        this.bookingReference = bookingReference;
         this.vehicle = vehicle;
+        this.services = services != null ? services : new ArrayList<>();
+        this.totalAmount = totalAmount;
         this.service = service;
+        this.serviceNameSnapshot = serviceNameSnapshot;
+        this.servicePriceSnapshot = servicePriceSnapshot;
+        this.estimatedPrice = estimatedPrice;
+        this.price = totalAmount != null ? totalAmount : (servicePriceSnapshot != null ? servicePriceSnapshot : estimatedPrice);
         this.bookingDate = bookingDate;
         this.bookingTime = bookingTime;
+        this.timeSlot = timeSlot;
         this.status = status;
         this.customerNotes = customerNotes;
-        this.estimatedPrice = estimatedPrice;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.cancelledAt = cancelledAt;
     }
 
     public static BookingResponse fromEntity(Booking booking) {
@@ -64,6 +93,29 @@ public class BookingResponse {
             );
         }
 
+        List<BookingServiceItemResponse> servicesList = new ArrayList<>();
+        if (booking.getBookingServices() != null && !booking.getBookingServices().isEmpty()) {
+            for (BookingService bs : booking.getBookingServices()) {
+                servicesList.add(new BookingServiceItemResponse(
+                        bs.getServiceCatalog() != null ? bs.getServiceCatalog().getId() : null,
+                        bs.getServiceNameSnapshot(),
+                        bs.getBasePriceSnapshot(),
+                        bs.getDiscountTypeSnapshot(),
+                        bs.getDiscountValueSnapshot(),
+                        bs.getFinalPriceSnapshot()
+                ));
+            }
+        } else if (booking.getService() != null) {
+            servicesList.add(new BookingServiceItemResponse(
+                    booking.getService().getId(),
+                    booking.getServiceNameSnapshot() != null ? booking.getServiceNameSnapshot() : booking.getService().getName(),
+                    booking.getServicePriceSnapshot() != null ? booking.getServicePriceSnapshot() : booking.getService().getBasePrice(),
+                    DiscountType.NO_DISCOUNT,
+                    BigDecimal.ZERO,
+                    booking.getServicePriceSnapshot() != null ? booking.getServicePriceSnapshot() : booking.getService().getBasePrice()
+            ));
+        }
+
         ServiceSummary serviceSummary = null;
         if (booking.getService() != null) {
             serviceSummary = new ServiceSummary(
@@ -73,19 +125,51 @@ public class BookingResponse {
                     booking.getService().getBasePrice(),
                     booking.getService().getEstimatedDurationMinutes()
             );
+        } else if (booking.getBookingServices() != null && !booking.getBookingServices().isEmpty()) {
+            BookingService first = booking.getBookingServices().get(0);
+            if (first.getServiceCatalog() != null) {
+                serviceSummary = new ServiceSummary(
+                        first.getServiceCatalog().getId(),
+                        first.getServiceNameSnapshot(),
+                        first.getServiceCatalog().getCategory(),
+                        first.getBasePriceSnapshot(),
+                        first.getServiceCatalog().getEstimatedDurationMinutes()
+                );
+            }
+        }
+
+        BigDecimal totalAmountVal = booking.getTotalAmount() != null
+                ? booking.getTotalAmount()
+                : (booking.getServicePriceSnapshot() != null ? booking.getServicePriceSnapshot() : booking.getEstimatedPrice());
+
+        String serviceNameSnapshotVal = booking.getServiceNameSnapshot();
+        if (serviceNameSnapshotVal == null && !servicesList.isEmpty()) {
+            serviceNameSnapshotVal = servicesList.get(0).getServiceName();
+        }
+
+        BigDecimal servicePriceSnapshotVal = booking.getServicePriceSnapshot();
+        if (servicePriceSnapshotVal == null) {
+            servicePriceSnapshotVal = totalAmountVal;
         }
 
         return new BookingResponse(
                 booking.getId(),
+                booking.getBookingReference(),
                 vehicleSummary,
+                servicesList,
+                totalAmountVal,
                 serviceSummary,
+                serviceNameSnapshotVal,
+                servicePriceSnapshotVal,
+                totalAmountVal,
                 booking.getBookingDate(),
                 booking.getBookingTime(),
+                booking.getTimeSlot(),
                 booking.getStatus(),
                 booking.getCustomerNotes(),
-                booking.getEstimatedPrice(),
                 booking.getCreatedAt(),
-                booking.getUpdatedAt()
+                booking.getUpdatedAt(),
+                booking.getCancelledAt()
         );
     }
 
@@ -97,6 +181,14 @@ public class BookingResponse {
         this.id = id;
     }
 
+    public String getBookingReference() {
+        return bookingReference;
+    }
+
+    public void setBookingReference(String bookingReference) {
+        this.bookingReference = bookingReference;
+    }
+
     public VehicleSummary getVehicle() {
         return vehicle;
     }
@@ -105,12 +197,60 @@ public class BookingResponse {
         this.vehicle = vehicle;
     }
 
+    public List<BookingServiceItemResponse> getServices() {
+        return services;
+    }
+
+    public void setServices(List<BookingServiceItemResponse> services) {
+        this.services = services;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
     public ServiceSummary getService() {
         return service;
     }
 
     public void setService(ServiceSummary service) {
         this.service = service;
+    }
+
+    public String getServiceNameSnapshot() {
+        return serviceNameSnapshot;
+    }
+
+    public void setServiceNameSnapshot(String serviceNameSnapshot) {
+        this.serviceNameSnapshot = serviceNameSnapshot;
+    }
+
+    public BigDecimal getServicePriceSnapshot() {
+        return servicePriceSnapshot;
+    }
+
+    public void setServicePriceSnapshot(BigDecimal servicePriceSnapshot) {
+        this.servicePriceSnapshot = servicePriceSnapshot;
+    }
+
+    public BigDecimal getEstimatedPrice() {
+        return estimatedPrice;
+    }
+
+    public void setEstimatedPrice(BigDecimal estimatedPrice) {
+        this.estimatedPrice = estimatedPrice;
+    }
+
+    public BigDecimal getPrice() {
+        return servicePriceSnapshot != null ? servicePriceSnapshot : estimatedPrice;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public LocalDate getBookingDate() {
@@ -129,6 +269,14 @@ public class BookingResponse {
         this.bookingTime = bookingTime;
     }
 
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
+    }
+
     public BookingStatus getStatus() {
         return status;
     }
@@ -145,14 +293,6 @@ public class BookingResponse {
         this.customerNotes = customerNotes;
     }
 
-    public BigDecimal getEstimatedPrice() {
-        return estimatedPrice;
-    }
-
-    public void setEstimatedPrice(BigDecimal estimatedPrice) {
-        this.estimatedPrice = estimatedPrice;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -167,6 +307,14 @@ public class BookingResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 
     public static class VehicleSummary {
@@ -274,6 +422,82 @@ public class BookingResponse {
 
         public void setEstimatedDurationMinutes(Integer estimatedDurationMinutes) {
             this.estimatedDurationMinutes = estimatedDurationMinutes;
+        }
+    }
+
+    public static class BookingServiceItemResponse {
+        private Long serviceId;
+        private String serviceName;
+        private BigDecimal basePrice;
+        private DiscountType discountType;
+        private BigDecimal discountValue;
+        private BigDecimal finalPrice;
+
+        public BookingServiceItemResponse() {
+        }
+
+        public BookingServiceItemResponse(
+                Long serviceId,
+                String serviceName,
+                BigDecimal basePrice,
+                DiscountType discountType,
+                BigDecimal discountValue,
+                BigDecimal finalPrice
+        ) {
+            this.serviceId = serviceId;
+            this.serviceName = serviceName;
+            this.basePrice = basePrice;
+            this.discountType = discountType != null ? discountType : DiscountType.NO_DISCOUNT;
+            this.discountValue = discountValue != null ? discountValue : BigDecimal.ZERO;
+            this.finalPrice = finalPrice != null ? finalPrice : basePrice;
+        }
+
+        public Long getServiceId() {
+            return serviceId;
+        }
+
+        public void setServiceId(Long serviceId) {
+            this.serviceId = serviceId;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public BigDecimal getBasePrice() {
+            return basePrice;
+        }
+
+        public void setBasePrice(BigDecimal basePrice) {
+            this.basePrice = basePrice;
+        }
+
+        public DiscountType getDiscountType() {
+            return discountType;
+        }
+
+        public void setDiscountType(DiscountType discountType) {
+            this.discountType = discountType;
+        }
+
+        public BigDecimal getDiscountValue() {
+            return discountValue;
+        }
+
+        public void setDiscountValue(BigDecimal discountValue) {
+            this.discountValue = discountValue;
+        }
+
+        public BigDecimal getFinalPrice() {
+            return finalPrice;
+        }
+
+        public void setFinalPrice(BigDecimal finalPrice) {
+            this.finalPrice = finalPrice;
         }
     }
 }

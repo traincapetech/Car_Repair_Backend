@@ -1,20 +1,27 @@
 package com.carservice.backend.booking.entity;
 
 import com.carservice.backend.booking.enums.BookingStatus;
+import com.carservice.backend.booking.enums.BookingTimeSlot;
 import com.carservice.backend.servicecatalog.entity.ServiceCatalog;
 import com.carservice.backend.user.entity.User;
 import com.carservice.backend.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Entity
 @Table(
         name = "bookings",
         indexes = {
+                @Index(name = "idx_bookings_booking_reference", columnList = "booking_reference"),
                 @Index(name = "idx_bookings_user_id", columnList = "user_id"),
                 @Index(name = "idx_bookings_vehicle_id", columnList = "vehicle_id"),
                 @Index(name = "idx_bookings_service_id", columnList = "service_id"),
@@ -28,6 +35,9 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "booking_reference", length = 32, unique = true)
+    private String bookingReference;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -36,15 +46,30 @@ public class Booking {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "service_id", nullable = false)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<BookingService> bookingServices = new ArrayList<>();
+
+    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalAmount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id", nullable = true)
     private ServiceCatalog service;
+
+    @Column(name = "service_name_snapshot")
+    private String serviceNameSnapshot;
+
+    @Column(name = "service_price_snapshot", precision = 10, scale = 2)
+    private BigDecimal servicePriceSnapshot;
 
     @Column(name = "booking_date", nullable = false)
     private LocalDate bookingDate;
 
     @Column(name = "booking_time", nullable = false)
     private LocalTime bookingTime;
+
+    @Column(name = "time_slot", length = 50)
+    private String timeSlot;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -61,6 +86,9 @@ public class Booking {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
 
     public Booking() {
     }
@@ -82,7 +110,45 @@ public class Booking {
         this.bookingTime = bookingTime;
         this.status = status;
         this.customerNotes = customerNotes;
-        this.estimatedPrice = estimatedPrice;
+        this.estimatedPrice = estimatedPrice != null ? estimatedPrice.setScale(2, RoundingMode.HALF_UP) : null;
+        this.servicePriceSnapshot = this.estimatedPrice;
+        this.totalAmount = this.estimatedPrice;
+        if (service != null) {
+            this.serviceNameSnapshot = service.getName();
+        }
+        if (bookingTime != null) {
+            this.timeSlot = BookingTimeSlot.fromBookingTime(bookingTime).getSlot();
+        }
+    }
+
+    public void addBookingService(BookingService bookingService) {
+        if (this.bookingServices == null) {
+            this.bookingServices = new ArrayList<>();
+        }
+        this.bookingServices.add(bookingService);
+        bookingService.setBooking(this);
+    }
+
+    public void removeBookingService(BookingService bookingService) {
+        if (this.bookingServices != null) {
+            this.bookingServices.remove(bookingService);
+            bookingService.setBooking(null);
+        }
+    }
+
+    public BigDecimal calculateTotalAmount() {
+        if (this.bookingServices == null || this.bookingServices.isEmpty()) {
+            return this.totalAmount != null ? this.totalAmount : (this.estimatedPrice != null ? this.estimatedPrice : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+        }
+        BigDecimal sum = BigDecimal.ZERO;
+        for (BookingService item : this.bookingServices) {
+            if (item.getFinalPriceSnapshot() != null) {
+                sum = sum.add(item.getFinalPriceSnapshot());
+            } else if (item.getBasePriceSnapshot() != null) {
+                sum = sum.add(item.getBasePriceSnapshot());
+            }
+        }
+        return sum.setScale(2, RoundingMode.HALF_UP);
     }
 
     @PrePersist
@@ -93,11 +159,38 @@ public class Booking {
         if (this.status == null) {
             this.status = BookingStatus.PENDING;
         }
+        if (this.bookingReference == null) {
+            this.bookingReference = generateBookingReference(this.bookingDate != null ? this.bookingDate : LocalDate.now());
+        }
+        if (this.totalAmount == null) {
+            this.totalAmount = calculateTotalAmount();
+        }
+        if (this.estimatedPrice == null) {
+            this.estimatedPrice = this.totalAmount != null ? this.totalAmount : (this.servicePriceSnapshot != null ? this.servicePriceSnapshot : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+        }
+        if (this.servicePriceSnapshot == null) {
+            this.servicePriceSnapshot = this.totalAmount;
+        }
+        if (this.serviceNameSnapshot == null && this.service != null) {
+            this.serviceNameSnapshot = this.service.getName();
+        }
+        if (this.timeSlot == null && this.bookingTime != null) {
+            this.timeSlot = BookingTimeSlot.fromBookingTime(this.bookingTime).getSlot();
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+        if (this.status == BookingStatus.CANCELLED && this.cancelledAt == null) {
+            this.cancelledAt = LocalDateTime.now();
+        }
+    }
+
+    public static String generateBookingReference(LocalDate date) {
+        String dateStr = date != null ? date.format(DateTimeFormatter.BASIC_ISO_DATE) : LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+        int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999);
+        return "CSB-" + dateStr + "-" + randomNum;
     }
 
     public Long getId() {
@@ -106,6 +199,14 @@ public class Booking {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getBookingReference() {
+        return bookingReference;
+    }
+
+    public void setBookingReference(String bookingReference) {
+        this.bookingReference = bookingReference;
     }
 
     public User getUser() {
@@ -132,6 +233,25 @@ public class Booking {
         this.service = service;
     }
 
+    public String getServiceNameSnapshot() {
+        return serviceNameSnapshot;
+    }
+
+    public void setServiceNameSnapshot(String serviceNameSnapshot) {
+        this.serviceNameSnapshot = serviceNameSnapshot;
+    }
+
+    public BigDecimal getServicePriceSnapshot() {
+        return servicePriceSnapshot;
+    }
+
+    public void setServicePriceSnapshot(BigDecimal servicePriceSnapshot) {
+        this.servicePriceSnapshot = servicePriceSnapshot;
+        if (this.estimatedPrice == null) {
+            this.estimatedPrice = servicePriceSnapshot;
+        }
+    }
+
     public LocalDate getBookingDate() {
         return bookingDate;
     }
@@ -148,12 +268,23 @@ public class Booking {
         this.bookingTime = bookingTime;
     }
 
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
+    }
+
     public BookingStatus getStatus() {
         return status;
     }
 
     public void setStatus(BookingStatus status) {
         this.status = status;
+        if (status == BookingStatus.CANCELLED && this.cancelledAt == null) {
+            this.cancelledAt = LocalDateTime.now();
+        }
     }
 
     public String getCustomerNotes() {
@@ -165,11 +296,14 @@ public class Booking {
     }
 
     public BigDecimal getEstimatedPrice() {
-        return estimatedPrice;
+        return estimatedPrice != null ? estimatedPrice : servicePriceSnapshot;
     }
 
     public void setEstimatedPrice(BigDecimal estimatedPrice) {
         this.estimatedPrice = estimatedPrice;
+        if (this.servicePriceSnapshot == null) {
+            this.servicePriceSnapshot = estimatedPrice;
+        }
     }
 
     public LocalDateTime getCreatedAt() {
@@ -186,5 +320,35 @@ public class Booking {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<BookingService> getBookingServices() {
+        return bookingServices;
+    }
+
+    public void setBookingServices(List<BookingService> bookingServices) {
+        this.bookingServices = bookingServices;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount != null ? totalAmount : (estimatedPrice != null ? estimatedPrice : servicePriceSnapshot);
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount != null ? totalAmount.setScale(2, RoundingMode.HALF_UP) : null;
+        if (this.estimatedPrice == null) {
+            this.estimatedPrice = this.totalAmount;
+        }
+        if (this.servicePriceSnapshot == null) {
+            this.servicePriceSnapshot = this.totalAmount;
+        }
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 }

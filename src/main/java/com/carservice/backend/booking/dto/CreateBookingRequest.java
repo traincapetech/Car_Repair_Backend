@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
 
 public class CreateBookingRequest {
 
@@ -13,15 +15,17 @@ public class CreateBookingRequest {
     @Positive(message = "Vehicle ID must be positive")
     private Long vehicleId;
 
-    @NotNull(message = "Service ID is required")
     @Positive(message = "Service ID must be positive")
     private Long serviceId;
+
+    private List<@Positive(message = "Each service ID must be positive") Long> serviceIds;
 
     @NotNull(message = "Booking date is required")
     private LocalDate bookingDate;
 
-    @NotNull(message = "Booking time is required")
     private LocalTime bookingTime;
+
+    private String timeSlot;
 
     @Size(max = 1000, message = "Customer notes cannot exceed 1000 characters")
     private String customerNotes;
@@ -43,6 +47,44 @@ public class CreateBookingRequest {
         this.customerNotes = customerNotes;
     }
 
+    public CreateBookingRequest(
+            Long vehicleId,
+            Long serviceId,
+            LocalDate bookingDate,
+            String timeSlot,
+            String customerNotes
+    ) {
+        this.vehicleId = vehicleId;
+        this.serviceId = serviceId;
+        this.bookingDate = bookingDate;
+        this.timeSlot = timeSlot;
+        this.customerNotes = customerNotes;
+    }
+
+    public CreateBookingRequest(
+            Long vehicleId,
+            List<Long> serviceIds,
+            LocalDate bookingDate,
+            String timeSlot,
+            String customerNotes
+    ) {
+        this.vehicleId = vehicleId;
+        this.serviceIds = serviceIds;
+        this.bookingDate = bookingDate;
+        this.timeSlot = timeSlot;
+        this.customerNotes = customerNotes;
+    }
+
+    public List<Long> getEffectiveServiceIds() {
+        if (serviceIds != null && !serviceIds.isEmpty()) {
+            return serviceIds;
+        }
+        if (serviceId != null) {
+            return List.of(serviceId);
+        }
+        return Collections.emptyList();
+    }
+
     public Long getVehicleId() {
         return vehicleId;
     }
@@ -59,6 +101,14 @@ public class CreateBookingRequest {
         this.serviceId = serviceId;
     }
 
+    public List<Long> getServiceIds() {
+        return serviceIds;
+    }
+
+    public void setServiceIds(List<Long> serviceIds) {
+        this.serviceIds = serviceIds;
+    }
+
     public LocalDate getBookingDate() {
         return bookingDate;
     }
@@ -73,6 +123,14 @@ public class CreateBookingRequest {
 
     public void setBookingTime(LocalTime bookingTime) {
         this.bookingTime = bookingTime;
+    }
+
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
     }
 
     public String getCustomerNotes() {

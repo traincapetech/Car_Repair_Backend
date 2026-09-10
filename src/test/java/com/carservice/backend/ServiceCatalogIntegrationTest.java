@@ -7,6 +7,7 @@ import com.carservice.backend.servicecatalog.repository.ServiceCatalogRepository
 import com.carservice.backend.user.entity.User;
 import com.carservice.backend.user.enums.UserRole;
 import com.carservice.backend.user.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -82,6 +83,11 @@ public class ServiceCatalogIntegrationTest {
         adminToken = jwtService.generateAccessToken(adminUser);
     }
 
+    @AfterEach
+    void tearDown() {
+        serviceCatalogRepository.deactivateTestArtifacts();
+    }
+
     @Test
     @DisplayName("1. Unauthenticated GET /api/v1/services is rejected (401 Unauthorized)")
     void testGetServices_Unauthenticated() throws Exception {
@@ -110,6 +116,9 @@ public class ServiceCatalogIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data", isA(java.util.List.class)))
                 .andExpect(jsonPath("$.data[*].name", hasItem("Active General Service " + suffix)));
+
+        activeService.setIsActive(false);
+        serviceCatalogRepository.save(activeService);
     }
 
     @Test

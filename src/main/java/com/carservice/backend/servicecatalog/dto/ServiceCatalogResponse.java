@@ -1,6 +1,7 @@
 package com.carservice.backend.servicecatalog.dto;
 
 import com.carservice.backend.servicecatalog.entity.ServiceCatalog;
+import com.carservice.backend.servicecatalog.enums.DiscountType;
 import com.carservice.backend.servicecatalog.enums.ServiceCategory;
 
 import java.math.BigDecimal;
@@ -13,6 +14,9 @@ public class ServiceCatalogResponse {
     private String description;
     private ServiceCategory category;
     private BigDecimal basePrice;
+    private DiscountType discountType;
+    private BigDecimal discountValue;
+    private BigDecimal finalPrice;
     private Integer estimatedDurationMinutes;
     private Boolean isActive;
     private LocalDateTime createdAt;
@@ -32,11 +36,31 @@ public class ServiceCatalogResponse {
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
+        this(id, name, description, category, basePrice, DiscountType.NO_DISCOUNT, BigDecimal.ZERO, basePrice, estimatedDurationMinutes, isActive, createdAt, updatedAt);
+    }
+
+    public ServiceCatalogResponse(
+            Long id,
+            String name,
+            String description,
+            ServiceCategory category,
+            BigDecimal basePrice,
+            DiscountType discountType,
+            BigDecimal discountValue,
+            BigDecimal finalPrice,
+            Integer estimatedDurationMinutes,
+            Boolean isActive,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.category = category;
         this.basePrice = basePrice;
+        this.discountType = discountType != null ? discountType : DiscountType.NO_DISCOUNT;
+        this.discountValue = discountValue != null ? discountValue : BigDecimal.ZERO;
+        this.finalPrice = finalPrice != null ? finalPrice : basePrice;
         this.estimatedDurationMinutes = estimatedDurationMinutes;
         this.isActive = isActive;
         this.createdAt = createdAt;
@@ -53,6 +77,9 @@ public class ServiceCatalogResponse {
                 entity.getDescription(),
                 entity.getCategory(),
                 entity.getBasePrice(),
+                entity.getDiscountType(),
+                entity.getDiscountValue(),
+                entity.calculateFinalPrice(),
                 entity.getEstimatedDurationMinutes(),
                 entity.getIsActive(),
                 entity.getCreatedAt(),
@@ -98,6 +125,30 @@ public class ServiceCatalogResponse {
 
     public void setBasePrice(BigDecimal basePrice) {
         this.basePrice = basePrice;
+    }
+
+    public DiscountType getDiscountType() {
+        return discountType;
+    }
+
+    public void setDiscountType(DiscountType discountType) {
+        this.discountType = discountType;
+    }
+
+    public BigDecimal getDiscountValue() {
+        return discountValue;
+    }
+
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    public BigDecimal getFinalPrice() {
+        return finalPrice;
+    }
+
+    public void setFinalPrice(BigDecimal finalPrice) {
+        this.finalPrice = finalPrice;
     }
 
     public Integer getEstimatedDurationMinutes() {

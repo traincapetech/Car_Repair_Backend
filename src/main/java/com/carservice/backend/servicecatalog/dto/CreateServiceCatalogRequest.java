@@ -1,5 +1,6 @@
 package com.carservice.backend.servicecatalog.dto;
 
+import com.carservice.backend.servicecatalog.enums.DiscountType;
 import com.carservice.backend.servicecatalog.enums.ServiceCategory;
 import jakarta.validation.constraints.*;
 
@@ -22,6 +23,12 @@ public class CreateServiceCatalogRequest {
     @Digits(integer = 8, fraction = 2, message = "Base price format is invalid")
     private BigDecimal basePrice;
 
+    private DiscountType discountType = DiscountType.NO_DISCOUNT;
+
+    @DecimalMin(value = "0.00", message = "Discount value cannot be negative")
+    @Digits(integer = 8, fraction = 2, message = "Discount value format is invalid")
+    private BigDecimal discountValue = BigDecimal.ZERO;
+
     @NotNull(message = "Estimated duration is required")
     @Min(value = 1, message = "Estimated duration must be at least 1 minute")
     @Max(value = 1440, message = "Estimated duration cannot exceed 1440 minutes (24 hours)")
@@ -40,10 +47,25 @@ public class CreateServiceCatalogRequest {
             Integer estimatedDurationMinutes,
             Boolean isActive
     ) {
+        this(name, description, category, basePrice, DiscountType.NO_DISCOUNT, BigDecimal.ZERO, estimatedDurationMinutes, isActive);
+    }
+
+    public CreateServiceCatalogRequest(
+            String name,
+            String description,
+            ServiceCategory category,
+            BigDecimal basePrice,
+            DiscountType discountType,
+            BigDecimal discountValue,
+            Integer estimatedDurationMinutes,
+            Boolean isActive
+    ) {
         this.name = name;
         this.description = description;
         this.category = category;
         this.basePrice = basePrice;
+        this.discountType = discountType != null ? discountType : DiscountType.NO_DISCOUNT;
+        this.discountValue = discountValue != null ? discountValue : BigDecimal.ZERO;
         this.estimatedDurationMinutes = estimatedDurationMinutes;
         this.isActive = isActive != null ? isActive : true;
     }
@@ -78,6 +100,22 @@ public class CreateServiceCatalogRequest {
 
     public void setBasePrice(BigDecimal basePrice) {
         this.basePrice = basePrice;
+    }
+
+    public DiscountType getDiscountType() {
+        return discountType;
+    }
+
+    public void setDiscountType(DiscountType discountType) {
+        this.discountType = discountType;
+    }
+
+    public BigDecimal getDiscountValue() {
+        return discountValue;
+    }
+
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue;
     }
 
     public Integer getEstimatedDurationMinutes() {

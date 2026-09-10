@@ -13,13 +13,40 @@ import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    @Query("SELECT b FROM Booking b JOIN FETCH b.vehicle JOIN FETCH b.service WHERE b.user.id = :userId ORDER BY b.createdAt DESC")
+    @Query("""
+        SELECT DISTINCT b FROM Booking b
+        JOIN FETCH b.vehicle v
+        LEFT JOIN FETCH b.bookingServices bs
+        LEFT JOIN FETCH bs.serviceCatalog sc
+        LEFT JOIN FETCH b.service s
+        WHERE b.user.id = :userId
+        ORDER BY b.createdAt DESC
+    """)
     List<Booking> findAllByUserIdWithDetailsOrderByCreatedAtDesc(@Param("userId") Long userId);
 
-    @Query("SELECT b FROM Booking b JOIN FETCH b.vehicle JOIN FETCH b.service WHERE b.id = :id AND b.user.id = :userId")
+    @Query("""
+        SELECT b FROM Booking b
+        JOIN FETCH b.vehicle v
+        LEFT JOIN FETCH b.bookingServices bs
+        LEFT JOIN FETCH bs.serviceCatalog sc
+        LEFT JOIN FETCH b.service s
+        WHERE b.id = :id AND b.user.id = :userId
+    """)
     Optional<Booking> findByIdAndUserIdWithDetails(@Param("id") Long id, @Param("userId") Long userId);
 
     Optional<Booking> findByIdAndUserId(Long id, Long userId);
+
+    @Query("""
+        SELECT b FROM Booking b
+        JOIN FETCH b.vehicle v
+        LEFT JOIN FETCH b.bookingServices bs
+        LEFT JOIN FETCH bs.serviceCatalog sc
+        LEFT JOIN FETCH b.service s
+        WHERE b.bookingReference = :bookingReference AND b.user.id = :userId
+    """)
+    Optional<Booking> findByBookingReferenceAndUserId(@Param("bookingReference") String bookingReference, @Param("userId") Long userId);
+
+    boolean existsByBookingReference(String bookingReference);
 
     List<Booking> findAllByUserIdOrderByCreatedAtDesc(Long userId);
 
@@ -30,5 +57,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             LocalDate bookingDate,
             LocalTime bookingTime,
             BookingStatus status
+    );
+
+    @Query("""
+        SELECT COUNT(b) > 0 FROM Booking b
+        WHERE b.vehicle.id = :vehicleId
+          AND b.bookingDate = :bookingDate
+          AND b.status != com.carservice.backend.booking.enums.BookingStatus.CANCELLED
+          AND (
+            (:timeSlot IS NOT NULL AND b.timeSlot = :timeSlot)
+            OR
+            (:bookingTime IS NOT NULL AND b.bookingTime = :bookingTime)
+          )
+    """)
+    boolean existsActiveConflict(
+            @Param("vehicleId") Long vehicleId,
+            @Param("bookingDate") LocalDate bookingDate,
+            @Param("timeSlot") String timeSlot,
+            @Param("bookingTime") LocalTime bookingTime
     );
 }

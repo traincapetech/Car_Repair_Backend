@@ -62,7 +62,7 @@ public class AuthenticationRegressionTest {
     void testCustomerRegistration_Success() throws Exception {
         String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
         String email = "reg.test." + uniqueSuffix + "@example.com";
-        String phone = "9" + (System.currentTimeMillis() % 1000000000L);
+        String phone = "9" + String.format("%09d", Math.abs(System.currentTimeMillis() % 1000000000L));
 
         mockMvc.perform(post("/api/v1/auth/register/customer")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +81,7 @@ public class AuthenticationRegressionTest {
     void testCustomerRegistration_DuplicateEmail() throws Exception {
         String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
         String email = "dup.test." + uniqueSuffix + "@example.com";
-        String phone1 = "9" + (System.currentTimeMillis() % 1000000000L);
+        String phone1 = "9" + String.format("%09d", Math.abs(System.currentTimeMillis() % 1000000000L));
 
         // First registration
         mockMvc.perform(post("/api/v1/auth/register/customer")
@@ -90,7 +90,7 @@ public class AuthenticationRegressionTest {
                 .andExpect(status().isCreated());
 
         // Duplicate registration with same email
-        String phone2 = "8" + (System.currentTimeMillis() % 1000000000L);
+        String phone2 = "8" + String.format("%09d", Math.abs(System.currentTimeMillis() % 1000000000L));
         mockMvc.perform(post("/api/v1/auth/register/customer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Duplicate User\",\"email\":\"" + email + "\",\"phone\":\"" + phone2 + "\",\"password\":\"TestPassword123\"}"))
@@ -104,7 +104,7 @@ public class AuthenticationRegressionTest {
     void testLogin_Success() throws Exception {
         String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
         String email = "login.test." + uniqueSuffix + "@example.com";
-        String phone = "9" + (System.currentTimeMillis() % 1000000000L);
+        String phone = "9" + String.format("%09d", Math.abs(System.currentTimeMillis() % 1000000000L));
 
         User user = new User();
         user.setName("Login Test User");
@@ -145,7 +145,7 @@ public class AuthenticationRegressionTest {
     void testProfileUpdate() throws Exception {
         String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
         String email = "profile.test." + uniqueSuffix + "@example.com";
-        String phone = "9" + (System.currentTimeMillis() % 1000000000L);
+        String phone = "9" + String.format("%09d", Math.abs(System.currentTimeMillis() % 1000000000L));
 
         User user = new User();
         user.setName("Original Name");
@@ -157,7 +157,7 @@ public class AuthenticationRegressionTest {
         user = userRepository.save(user);
 
         String token = jwtService.generateAccessToken(user);
-        String updatedPhone = "7" + (System.currentTimeMillis() % 1000000000L);
+        String updatedPhone = "7" + String.format("%09d", Math.abs(System.currentTimeMillis() % 1000000000L));
 
         mockMvc.perform(put("/api/v1/auth/me")
                         .header("Authorization", "Bearer " + token)

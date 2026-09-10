@@ -3,8 +3,10 @@ package com.carservice.backend;
 import com.carservice.backend.booking.entity.Booking;
 import com.carservice.backend.booking.enums.BookingStatus;
 import com.carservice.backend.booking.repository.BookingRepository;
+import com.carservice.backend.booking.repository.BookingServiceRepository;
 import com.carservice.backend.security.jwt.JwtService;
 import com.carservice.backend.servicecatalog.entity.ServiceCatalog;
+import com.carservice.backend.servicecatalog.enums.DiscountType;
 import com.carservice.backend.servicecatalog.enums.ServiceCategory;
 import com.carservice.backend.servicecatalog.repository.ServiceCatalogRepository;
 import com.carservice.backend.user.entity.User;
@@ -57,6 +59,9 @@ public class BookingIntegrationTest {
     private BookingRepository bookingRepository;
 
     @Autowired
+    private BookingServiceRepository bookingServiceRepository;
+
+    @Autowired
     private JwtService jwtService;
 
     @Autowired
@@ -105,7 +110,7 @@ public class BookingIntegrationTest {
                 "Maruti",
                 "Swift",
                 2022,
-                "DL01" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(),
+                "DL01" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase(),
                 FuelType.PETROL,
                 Transmission.MANUAL
         );
@@ -116,7 +121,7 @@ public class BookingIntegrationTest {
                 "Hyundai",
                 "Creta",
                 2023,
-                "DL02" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(),
+                "DL02" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase(),
                 FuelType.DIESEL,
                 Transmission.AUTOMATIC
         );
@@ -141,6 +146,11 @@ public class BookingIntegrationTest {
                 false
         );
         inactiveService = serviceCatalogRepository.save(inactiveService);
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        serviceCatalogRepository.deactivateTestArtifacts();
     }
 
     @Test
@@ -558,5 +568,523 @@ public class BookingIntegrationTest {
                         .content(jsonPayload))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.status").value("PENDING"));
+    }
+
+    @Test
+    @DisplayName("18. Booking generates unique human-friendly bookingReference (CSB-YYYYMMDD-XXXXXX)")
+    void testCreateBooking_GeneratesBookingReference() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(12);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceId": %d,
+                    "bookingDate": "%s",
+                    "timeSlot": "11:00-12:00",
+                    "customerNotes": "Ref test"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.bookingReference").value(matchesPattern("^CSB-\\d{8}-\\d{6}$")))
+                .andExpect(jsonPath("$.data.timeSlot").value("11:00-12:00"))
+                .andExpect(jsonPath("$.data.serviceNameSnapshot").value(activeService.getName()))
+                .andExpect(jsonPath("$.data.servicePriceSnapshot").value(activeService.getBasePrice().doubleValue()))
+                .andExpect(jsonPath("$.data.price").value(activeService.getBasePrice().doubleValue()));
+    }
+
+    @Test
+    @DisplayName("19. Arbitrary uncontrolled time slots are rejected (400 Bad Request)")
+    void testCreateBooking_InvalidTimeSlotRejected() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(13);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceId": %d,
+                    "bookingDate": "%s",
+                    "timeSlot": "whenever"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message", containsString("Invalid time slot")));
+    }
+
+    @Test
+    @DisplayName("20. Price snapshot immutability: changing service catalog price does not alter historical booking price")
+    void testPriceSnapshotImmutability() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(14);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceId": %d,
+                    "bookingDate": "%s",
+                    "timeSlot": "14:00-15:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        // 1. Create booking at basePrice 1999.00
+        String responseContent = mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.price").value(1999.00))
+                .andReturn().getResponse().getContentAsString();
+
+        Long bookingId = ((Number) com.jayway.jsonpath.JsonPath.read(responseContent, "$.data.id")).longValue();
+
+        // 2. Change price in service catalog to 3500.00
+        ServiceCatalog catalogService = serviceCatalogRepository.findById(activeService.getId()).orElseThrow();
+        catalogService.setBasePrice(new BigDecimal("3500.00"));
+        serviceCatalogRepository.save(catalogService);
+
+        // 3. Fetch booking - must still show snapshot price 1999.00
+        mockMvc.perform(get("/api/v1/bookings/" + bookingId)
+                        .header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.servicePriceSnapshot").value(1999.00))
+                .andExpect(jsonPath("$.data.estimatedPrice").value(1999.00))
+                .andExpect(jsonPath("$.data.price").value(1999.00));
+
+        // Restore original price
+        catalogService.setBasePrice(new BigDecimal("1999.00"));
+        serviceCatalogRepository.save(catalogService);
+    }
+
+    @Test
+    @DisplayName("21. Security: User B cannot view User A's booking (404 Not Found)")
+    void testSecurity_UserBCannotViewUserABooking() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(15);
+        Booking bookingA = new Booking(
+                customerA, vehicleA, activeService, futureDate, LocalTime.of(10, 0),
+                BookingStatus.PENDING, "A private notes", activeService.getBasePrice()
+        );
+        bookingA = bookingRepository.save(bookingA);
+
+        mockMvc.perform(get("/api/v1/bookings/" + bookingA.getId())
+                        .header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("22. Security: User B cannot book service using User A's vehicle (404 Not Found)")
+    void testSecurity_UserBCannotBookWithUserAVehicle() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(16);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceId": %d,
+                    "bookingDate": "%s",
+                    "timeSlot": "15:00-16:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenB)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message", containsString("Vehicle not found")));
+    }
+
+    @Test
+    @DisplayName("23. Multi-service booking: Customer can book 2 services and server calculates total amount")
+    void testCreateBooking_MultipleServices_Success() throws Exception {
+        String suffix = UUID.randomUUID().toString().substring(0, 6);
+        ServiceCatalog service1 = new ServiceCatalog(
+                "Multi AC " + suffix,
+                "AC check",
+                ServiceCategory.AC_SERVICE,
+                new BigDecimal("1500.00"),
+                DiscountType.PERCENTAGE,
+                new BigDecimal("10.00"),
+                60,
+                true
+        );
+        service1 = serviceCatalogRepository.save(service1);
+
+        ServiceCatalog service2 = new ServiceCatalog(
+                "Multi Alignment " + suffix,
+                "Wheel alignment",
+                ServiceCategory.WHEEL_ALIGNMENT,
+                new BigDecimal("800.00"),
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("100.00"),
+                45,
+                true
+        );
+        service2 = serviceCatalogRepository.save(service2);
+
+        LocalDate futureDate = LocalDate.now().plusDays(17);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d, %d],
+                    "bookingDate": "%s",
+                    "timeSlot": "09:00-10:00",
+                    "customerNotes": "Two services"
+                }
+                """, vehicleA.getId(), service1.getId(), service2.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("PENDING"))
+                .andExpect(jsonPath("$.data.totalAmount").value(2050.00))
+                .andExpect(jsonPath("$.data.services", hasSize(2)))
+                .andExpect(jsonPath("$.data.services[0].serviceId").value(service1.getId()))
+                .andExpect(jsonPath("$.data.services[0].serviceName").value(service1.getName()))
+                .andExpect(jsonPath("$.data.services[0].basePrice").value(1500.00))
+                .andExpect(jsonPath("$.data.services[0].discountType").value("PERCENTAGE"))
+                .andExpect(jsonPath("$.data.services[0].discountValue").value(10.00))
+                .andExpect(jsonPath("$.data.services[0].finalPrice").value(1350.00))
+                .andExpect(jsonPath("$.data.services[1].serviceId").value(service2.getId()))
+                .andExpect(jsonPath("$.data.services[1].serviceName").value(service2.getName()))
+                .andExpect(jsonPath("$.data.services[1].basePrice").value(800.00))
+                .andExpect(jsonPath("$.data.services[1].discountType").value("FIXED_AMOUNT"))
+                .andExpect(jsonPath("$.data.services[1].discountValue").value(100.00))
+                .andExpect(jsonPath("$.data.services[1].finalPrice").value(700.00));
+    }
+
+    @Test
+    @DisplayName("24. Multi-service booking: Three or more services can be booked and line items created")
+    void testCreateBooking_ThreeOrMoreServices_Success() throws Exception {
+        String suffix = UUID.randomUUID().toString().substring(0, 6);
+        ServiceCatalog s1 = serviceCatalogRepository.save(new ServiceCatalog(
+                "Service One " + suffix, "Desc 1", ServiceCategory.GENERAL_SERVICE,
+                new BigDecimal("1000.00"), DiscountType.NO_DISCOUNT, BigDecimal.ZERO, 60, true
+        ));
+        ServiceCatalog s2 = serviceCatalogRepository.save(new ServiceCatalog(
+                "Service Two " + suffix, "Desc 2", ServiceCategory.BRAKE_SERVICE,
+                new BigDecimal("2000.00"), DiscountType.PERCENTAGE, new BigDecimal("15.00"), 60, true
+        ));
+        ServiceCatalog s3 = serviceCatalogRepository.save(new ServiceCatalog(
+                "Service Three " + suffix, "Desc 3", ServiceCategory.TYRE_SERVICE,
+                new BigDecimal("500.00"), DiscountType.FIXED_AMOUNT, new BigDecimal("50.00"), 30, true
+        ));
+
+        LocalDate futureDate = LocalDate.now().plusDays(18);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d, %d, %d],
+                    "bookingDate": "%s",
+                    "timeSlot": "10:00-11:00"
+                }
+                """, vehicleA.getId(), s1.getId(), s2.getId(), s3.getId(), futureDate);
+
+        // 1000 + 1700 + 450 = 3150.00
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.totalAmount").value(3150.00))
+                .andExpect(jsonPath("$.data.services", hasSize(3)))
+                .andExpect(jsonPath("$.data.services[0].finalPrice").value(1000.00))
+                .andExpect(jsonPath("$.data.services[1].finalPrice").value(1700.00))
+                .andExpect(jsonPath("$.data.services[2].finalPrice").value(450.00));
+    }
+
+    @Test
+    @DisplayName("25. Multi-service booking: Empty serviceIds list is rejected (400 Bad Request)")
+    void testCreateBooking_EmptyServiceIds_Rejected() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(19);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [],
+                    "bookingDate": "%s",
+                    "timeSlot": "12:00-13:00"
+                }
+                """, vehicleA.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message", containsString("At least one service must be selected")));
+    }
+
+    @Test
+    @DisplayName("26. Multi-service booking: Unknown service ID in serviceIds list is rejected (404 Not Found)")
+    void testCreateBooking_UnknownServiceIdInList_Rejected() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(20);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d, 9999999],
+                    "bookingDate": "%s",
+                    "timeSlot": "14:00-15:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message", containsString("Service not found")));
+    }
+
+    @Test
+    @DisplayName("27. Multi-service booking: Inactive service in serviceIds list is rejected (404 Not Found)")
+    void testCreateBooking_InactiveServiceInList_Rejected() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(21);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d, %d],
+                    "bookingDate": "%s",
+                    "timeSlot": "14:00-15:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), inactiveService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message", containsString("Service not found")));
+    }
+
+    @Test
+    @DisplayName("28. Transaction atomicity: Failure during multi-service creation persists no partial booking")
+    void testCreateBooking_TransactionRollbackOnInvalidService() throws Exception {
+        long initialBookingCount = bookingRepository.count();
+        long initialItemCount = bookingServiceRepository.count();
+
+        LocalDate futureDate = LocalDate.now().plusDays(22);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d, 8888888],
+                    "bookingDate": "%s",
+                    "timeSlot": "15:00-16:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isNotFound());
+
+        // Verify that no booking or line items were saved
+        assertEquals(initialBookingCount, bookingRepository.count());
+        assertEquals(initialItemCount, bookingServiceRepository.count());
+    }
+
+    @Test
+    @DisplayName("29. Multi-service booking: Duplicate service IDs are safely deduplicated")
+    void testCreateBooking_DuplicateServiceIdsDeduplicated() throws Exception {
+        String suffix = UUID.randomUUID().toString().substring(0, 6);
+        ServiceCatalog s1 = serviceCatalogRepository.save(new ServiceCatalog(
+                "Dedup S1 " + suffix, "Desc", ServiceCategory.AC_SERVICE,
+                new BigDecimal("1000.00"), 60, true
+        ));
+        ServiceCatalog s2 = serviceCatalogRepository.save(new ServiceCatalog(
+                "Dedup S2 " + suffix, "Desc", ServiceCategory.BRAKE_SERVICE,
+                new BigDecimal("500.00"), 45, true
+        ));
+
+        LocalDate futureDate = LocalDate.now().plusDays(23);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d, %d, %d],
+                    "bookingDate": "%s",
+                    "timeSlot": "16:00-17:00"
+                }
+                """, vehicleA.getId(), s1.getId(), s2.getId(), s1.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.services", hasSize(2)))
+                .andExpect(jsonPath("$.data.totalAmount").value(1500.00));
+    }
+
+    @Test
+    @DisplayName("30. Security: Client-supplied fake total, prices, discount and status are strictly ignored")
+    void testCreateBooking_ClientSuppliedTamperedFieldsIgnored() throws Exception {
+        String suffix = UUID.randomUUID().toString().substring(0, 6);
+        ServiceCatalog service = serviceCatalogRepository.save(new ServiceCatalog(
+                "Tamper Test " + suffix, "Desc", ServiceCategory.PERIODIC_SERVICE,
+                new BigDecimal("2999.00"), 120, true
+        ));
+
+        LocalDate futureDate = LocalDate.now().plusDays(24);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d],
+                    "bookingDate": "%s",
+                    "timeSlot": "09:00-10:00",
+                    "totalAmount": 1.00,
+                    "price": 1.00,
+                    "finalPrice": 1.00,
+                    "discountValue": 99.99,
+                    "status": "COMPLETED",
+                    "bookingReference": "CSB-HACKED-123456"
+                }
+                """, vehicleA.getId(), service.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.status").value("PENDING"))
+                .andExpect(jsonPath("$.data.totalAmount").value(2999.00))
+                .andExpect(jsonPath("$.data.services[0].finalPrice").value(2999.00))
+                .andExpect(jsonPath("$.data.bookingReference").value(not("CSB-HACKED-123456")))
+                .andExpect(jsonPath("$.data.bookingReference").value(matchesPattern("^CSB-\\d{8}-\\d{6}$")));
+    }
+
+    @Test
+    @DisplayName("31. Immutability: Modifying service catalog name, price and discount does not alter booking snapshots")
+    void testImmutability_MultiServiceSnapshotsPreserved() throws Exception {
+        String suffix = UUID.randomUUID().toString().substring(0, 6);
+        ServiceCatalog s1 = serviceCatalogRepository.save(new ServiceCatalog(
+                "Immut S1 " + suffix, "Desc", ServiceCategory.GENERAL_SERVICE,
+                new BigDecimal("1500.00"), DiscountType.PERCENTAGE, new BigDecimal("10.00"), 60, true
+        ));
+        ServiceCatalog s2 = serviceCatalogRepository.save(new ServiceCatalog(
+                "Immut S2 " + suffix, "Desc", ServiceCategory.AC_SERVICE,
+                new BigDecimal("800.00"), DiscountType.FIXED_AMOUNT, new BigDecimal("100.00"), 45, true
+        ));
+
+        LocalDate futureDate = LocalDate.now().plusDays(25);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d, %d],
+                    "bookingDate": "%s",
+                    "timeSlot": "10:00-11:00"
+                }
+                """, vehicleA.getId(), s1.getId(), s2.getId(), futureDate);
+
+        String responseContent = mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.totalAmount").value(2050.00))
+                .andReturn().getResponse().getContentAsString();
+
+        Long bookingId = ((Number) com.jayway.jsonpath.JsonPath.read(responseContent, "$.data.id")).longValue();
+
+        // Admin changes s1 and s2 in catalog
+        s1.setName("Changed S1 Name " + UUID.randomUUID().toString().substring(0, 6));
+        s1.setBasePrice(new BigDecimal("5000.00"));
+        s1.setDiscountType(DiscountType.NO_DISCOUNT);
+        s1.setDiscountValue(BigDecimal.ZERO);
+        serviceCatalogRepository.save(s1);
+
+        s2.setName("Changed S2 Name " + UUID.randomUUID().toString().substring(0, 6));
+        s2.setBasePrice(new BigDecimal("3000.00"));
+        serviceCatalogRepository.save(s2);
+
+        // Fetch booking - must still have original snapshot prices, names and total
+        mockMvc.perform(get("/api/v1/bookings/" + bookingId)
+                        .header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalAmount").value(2050.00))
+                .andExpect(jsonPath("$.data.services", hasSize(2)))
+                .andExpect(jsonPath("$.data.services[0].serviceName").value("Immut S1 " + suffix))
+                .andExpect(jsonPath("$.data.services[0].basePrice").value(1500.00))
+                .andExpect(jsonPath("$.data.services[0].discountType").value("PERCENTAGE"))
+                .andExpect(jsonPath("$.data.services[0].discountValue").value(10.00))
+                .andExpect(jsonPath("$.data.services[0].finalPrice").value(1350.00))
+                .andExpect(jsonPath("$.data.services[1].serviceName").value("Immut S2 " + suffix))
+                .andExpect(jsonPath("$.data.services[1].basePrice").value(800.00))
+                .andExpect(jsonPath("$.data.services[1].finalPrice").value(700.00));
+    }
+
+    @Test
+    @DisplayName("32. Double booking protection: Conflict rule blocks multi-service booking at same vehicle/date/time")
+    void testDoubleBooking_MultiServiceBlocked() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(26);
+        String jsonPayload1 = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceId": %d,
+                    "bookingDate": "%s",
+                    "timeSlot": "11:00-12:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        // First booking
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload1))
+                .andExpect(status().isCreated());
+
+        // Second booking attempt with multiple services for same vehicle and time slot
+        String jsonPayload2 = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d],
+                    "bookingDate": "%s",
+                    "timeSlot": "11:00-12:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload2))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message", containsString("already have an active booking")));
+    }
+
+    @Test
+    @DisplayName("33. List bookings includes services line items and server totalAmount")
+    void testGetMyBookings_IncludesServicesAndTotalAmount() throws Exception {
+        LocalDate futureDate = LocalDate.now().plusDays(27);
+        String jsonPayload = String.format("""
+                {
+                    "vehicleId": %d,
+                    "serviceIds": [%d],
+                    "bookingDate": "%s",
+                    "timeSlot": "14:00-15:00"
+                }
+                """, vehicleA.getId(), activeService.getId(), futureDate);
+
+        mockMvc.perform(post("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/v1/bookings")
+                        .header("Authorization", "Bearer " + tokenA))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[0].services").isArray())
+                .andExpect(jsonPath("$.data[0].totalAmount").isNumber());
     }
 }
