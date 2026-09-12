@@ -1,5 +1,7 @@
 package com.carservice.backend.marketplace.dto;
 
+import com.carservice.backend.marketplace.enums.WalletStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -9,6 +11,8 @@ public class WorkshopWalletResponse {
     private Long workshopId;
     private String workshopName;
     private BigDecimal balance;
+    private String currency = "INR";
+    private WalletStatus status = WalletStatus.ACTIVE;
     private LocalDateTime updatedAt;
 
     public WorkshopWalletResponse() {
@@ -19,6 +23,18 @@ public class WorkshopWalletResponse {
         this.workshopId = workshopId;
         this.workshopName = workshopName;
         this.balance = balance;
+        this.currency = "INR";
+        this.status = WalletStatus.ACTIVE;
+        this.updatedAt = updatedAt;
+    }
+
+    public WorkshopWalletResponse(Long id, Long workshopId, String workshopName, BigDecimal balance, String currency, WalletStatus status, LocalDateTime updatedAt) {
+        this.id = id;
+        this.workshopId = workshopId;
+        this.workshopName = workshopName;
+        this.balance = balance;
+        this.currency = currency != null ? currency : "INR";
+        this.status = status != null ? status : WalletStatus.ACTIVE;
         this.updatedAt = updatedAt;
     }
 
@@ -52,6 +68,22 @@ public class WorkshopWalletResponse {
 
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public WalletStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WalletStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getUpdatedAt() {

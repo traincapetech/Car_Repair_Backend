@@ -7,10 +7,14 @@ import com.carservice.backend.marketplace.enums.*;
 import com.carservice.backend.marketplace.repository.LeadOpportunityRepository;
 import com.carservice.backend.marketplace.repository.LeadPaymentRepository;
 import com.carservice.backend.marketplace.repository.ServiceRequestRepository;
+import com.carservice.backend.marketplace.repository.WorkshopPaymentRepository;
 import com.carservice.backend.marketplace.repository.WorkshopRepository;
+import com.carservice.backend.marketplace.event.OpportunityRematchedEvent;
+import com.carservice.backend.marketplace.event.OpportunityTransferredEvent;
 import com.carservice.backend.user.entity.User;
 import com.carservice.backend.user.enums.UserRole;
 import com.carservice.backend.vehicle.entity.Vehicle;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,8 @@ public class LeadOpportunityService {
     private final MatchingEngineService matchingEngineService;
     private final PlatformConfigService platformConfigService;
     private final MarketplaceAuditService auditService;
+    private final WorkshopPaymentRepository workshopPaymentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public LeadOpportunityService(
             LeadOpportunityRepository leadOpportunityRepository,
@@ -39,7 +45,9 @@ public class LeadOpportunityService {
             WalletService walletService,
             MatchingEngineService matchingEngineService,
             PlatformConfigService platformConfigService,
-            MarketplaceAuditService auditService
+            MarketplaceAuditService auditService,
+            WorkshopPaymentRepository workshopPaymentRepository,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.leadOpportunityRepository = leadOpportunityRepository;
         this.leadPaymentRepository = leadPaymentRepository;
@@ -49,6 +57,8 @@ public class LeadOpportunityService {
         this.matchingEngineService = matchingEngineService;
         this.platformConfigService = platformConfigService;
         this.auditService = auditService;
+        this.workshopPaymentRepository = workshopPaymentRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     private Workshop resolveWorkshop(User currentUser) {
@@ -159,7 +169,7 @@ public class LeadOpportunityService {
         // 1. Debit Workshop Wallet
         walletService.debitForLead(workshop, opportunity.getFeeSnapshot(), opportunity.getId());
 
-        // 2. Create LeadPayment
+        // 2. Create LeadPayment & WorkshopPayment
         LocalDateTime now = LocalDateTime.now();
         String txRef = "WAL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         LeadPayment payment = new LeadPayment(
@@ -173,17 +183,29 @@ public class LeadOpportunityService {
         leadPaymentRepository.save(payment);
         opportunity.setPayment(payment);
 
+        WorkshopPayment wp = new WorkshopPayment(
+                opportunity,
+                workshop,
+                opportunity.getFeeSnapshot(),
+                "INR",
+                PaymentMethod.WALLET,
+                PaymentStatus.SUCCESS,
+                txRef
+        );
+        wp.setPaidAt(now);
+        workshopPaymentRepository.save(wp);
+
         // 3. Unlock Details & Assign
         opportunity.setStatus(OpportunityStatus.CUSTOMER_DETAILS_UNLOCKED);
         opportunity.setPaidAt(now);
         opportunity.setUnlockedAt(now);
         LeadOpportunity saved = leadOpportunityRepository.save(opportunity);
 
-        // 4. Update ServiceRequest
+        // 4. Update ServiceRequest (Atomic Claim)
         ServiceRequest request = opportunity.getServiceRequest();
+        serviceRequestRepository.claimServiceRequest(request.getId(), workshop, ServiceRequestStatus.ACCEPTED);
         request.setAssignedWorkshop(workshop);
         request.setStatus(ServiceRequestStatus.ACCEPTED);
-        serviceRequestRepository.save(request);
 
         // 5. Cancel competing unaccepted/unpaid opportunities for this request
         List<LeadOpportunity> competing = leadOpportunityRepository.findByServiceRequestId(request.getId());
@@ -264,16 +286,29 @@ public class LeadOpportunityService {
         leadPaymentRepository.save(payment);
         opportunity.setPayment(payment);
 
+        WorkshopPayment wp = new WorkshopPayment(
+                opportunity,
+                workshop,
+                opportunity.getFeeSnapshot(),
+                "INR",
+                paymentRequest.getPaymentMethod() == LeadPaymentMethod.WALLET ? PaymentMethod.WALLET : PaymentMethod.RAZORPAY,
+                PaymentStatus.SUCCESS,
+                txRef
+        );
+        wp.setPaidAt(now);
+        wp.setRazorpayPaymentId(paymentRequest.getTransactionReference());
+        workshopPaymentRepository.save(wp);
+
         opportunity.setStatus(OpportunityStatus.CUSTOMER_DETAILS_UNLOCKED);
         opportunity.setPaidAt(now);
         opportunity.setUnlockedAt(now);
         LeadOpportunity saved = leadOpportunityRepository.save(opportunity);
 
-        // Update Service Request
+        // Update Service Request (Atomic Claim)
         ServiceRequest request = opportunity.getServiceRequest();
+        serviceRequestRepository.claimServiceRequest(request.getId(), workshop, ServiceRequestStatus.ACCEPTED);
         request.setAssignedWorkshop(workshop);
         request.setStatus(ServiceRequestStatus.ACCEPTED);
-        serviceRequestRepository.save(request);
 
         // Cancel other opportunities
         List<LeadOpportunity> competing = leadOpportunityRepository.findByServiceRequestId(request.getId());
@@ -318,6 +353,15 @@ public class LeadOpportunityService {
 
     @Transactional
     public LeadOpportunityResponse transferOpportunity(User currentUser, Long opportunityId, TransferOpportunityRequest transferRequest) {
+        if (transferRequest == null || transferRequest.getReason() == null || transferRequest.getReason().trim().isEmpty()) {
+            throw new IllegalArgumentException("Transfer reason is required");
+        }
+
+        if (!TransferReason.isValid(transferRequest.getReason())) {
+            throw new IllegalArgumentException("Invalid transfer reason: " + transferRequest.getReason()
+                    + ". Valid reasons are: WORKSHOP_AT_CAPACITY, PARTS_UNAVAILABLE, OUTSIDE_SERVICE_RADIUS, SPECIALIZED_EQUIPMENT_REQUIRED, OTHER");
+        }
+
         LeadOpportunity opportunity = leadOpportunityRepository.findById(opportunityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Opportunity not found with id: " + opportunityId));
 
@@ -327,55 +371,104 @@ public class LeadOpportunityService {
         }
 
         if (opportunity.getStatus() == OpportunityStatus.TRANSFERRED) {
-            throw new IllegalStateException("Opportunity has already been transferred");
+            throw new IllegalArgumentException("Opportunity has already been transferred");
+        }
+
+        if (opportunity.getStatus() == OpportunityStatus.LOST
+                || opportunity.getStatus() == OpportunityStatus.CANCELLED
+                || opportunity.getStatus() == OpportunityStatus.DECLINED
+                || opportunity.getStatus() == OpportunityStatus.EXPIRED) {
+            throw new IllegalArgumentException("Cannot transfer opportunity in status: " + opportunity.getStatus());
+        }
+
+        String baseReason = transferRequest.getReason().trim();
+        String recordedReason = baseReason;
+        if (transferRequest.getNotes() != null && !transferRequest.getNotes().trim().isEmpty()) {
+            recordedReason = baseReason + ": " + transferRequest.getNotes().trim();
+        }
+        if (recordedReason.length() > 255) {
+            recordedReason = recordedReason.substring(0, 255);
         }
 
         LocalDateTime now = LocalDateTime.now();
+        int updatedRows = leadOpportunityRepository.markAsTransferred(
+                opportunity.getId(),
+                OpportunityStatus.TRANSFERRED,
+                now,
+                recordedReason
+        );
+
+        if (updatedRows == 0) {
+            LeadOpportunity latest = leadOpportunityRepository.findById(opportunityId).orElse(opportunity);
+            if (latest.getStatus() == OpportunityStatus.TRANSFERRED) {
+                throw new IllegalArgumentException("Opportunity has already been transferred");
+            }
+            throw new IllegalArgumentException("Cannot transfer opportunity in status: " + latest.getStatus());
+        }
+
         opportunity.setStatus(OpportunityStatus.TRANSFERRED);
         opportunity.setTransferredAt(now);
-        opportunity.setTransferReason(transferRequest.getReason());
-        LeadOpportunity saved = leadOpportunityRepository.save(opportunity);
+        opportunity.setTransferReason(recordedReason);
 
         auditService.recordEvent(
                 MarketplaceEventType.TRANSFER_REQUESTED,
                 opportunity.getServiceRequest().getId(),
-                saved.getId(),
+                opportunity.getId(),
                 workshop.getId(),
                 currentUser.getId(),
-                "Workshop " + workshop.getBusinessName() + " requested transfer: " + transferRequest.getReason(),
-                "{\"reason\": \"" + transferRequest.getReason() + "\"}"
+                "Workshop " + workshop.getBusinessName() + " requested transfer: " + recordedReason,
+                "{\"reason\": \"" + baseReason + "\", \"notes\": \"" + (transferRequest.getNotes() != null ? transferRequest.getNotes().trim() : "") + "\"}"
         );
         auditService.recordEvent(
                 MarketplaceEventType.OPPORTUNITY_TRANSFERRED,
                 opportunity.getServiceRequest().getId(),
-                saved.getId(),
+                opportunity.getId(),
                 workshop.getId(),
                 currentUser.getId(),
-                "Opportunity #" + saved.getId() + " marked TRANSFERRED",
-                null
+                "Opportunity #" + opportunity.getId() + " marked TRANSFERRED",
+                "{\"transferredAt\": \"" + now + "\"}"
         );
 
         // Re-matching logic
-        ServiceRequest request = opportunity.getServiceRequest();
-        request.setAssignedWorkshop(null);
+        Long serviceRequestId = opportunity.getServiceRequest().getId();
+        ServiceRequest request = serviceRequestRepository.findById(serviceRequestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service request not found"));
+        if (request.getAssignedWorkshop() != null && request.getAssignedWorkshop().getId().equals(workshop.getId())) {
+            request.setAssignedWorkshop(null);
+        }
         request.setStatus(ServiceRequestStatus.RE_MATCHING);
         serviceRequestRepository.save(request);
 
-        // Exclude workshops that have transferred or declined this request
+        // Exclude workshops that have transferred, declined, or currently hold an active opportunity
         List<LeadOpportunity> existingOpportunities = leadOpportunityRepository.findByServiceRequestId(request.getId());
-        Set<Long> excludedWorkshopIds = existingOpportunities.stream()
-                .filter(o -> o.getStatus() == OpportunityStatus.TRANSFERRED || o.getStatus() == OpportunityStatus.DECLINED)
-                .map(o -> o.getWorkshop().getId())
-                .collect(Collectors.toSet());
+        Set<Long> excludedWorkshopIds = new HashSet<>();
         excludedWorkshopIds.add(workshop.getId());
+
+        for (LeadOpportunity opp : existingOpportunities) {
+            if (opp.getStatus() == OpportunityStatus.TRANSFERRED || opp.getStatus() == OpportunityStatus.DECLINED) {
+                excludedWorkshopIds.add(opp.getWorkshop().getId());
+            }
+            if (opp.getStatus() == OpportunityStatus.AVAILABLE
+                    || opp.getStatus() == OpportunityStatus.VIEWED
+                    || opp.getStatus() == OpportunityStatus.ACCEPTED
+                    || opp.getStatus() == OpportunityStatus.PAYMENT_PENDING
+                    || opp.getStatus() == OpportunityStatus.CUSTOMER_DETAILS_UNLOCKED) {
+                excludedWorkshopIds.add(opp.getWorkshop().getId());
+            }
+        }
 
         List<Workshop> newEligibleWorkshops = matchingEngineService.findEligibleWorkshops(request, excludedWorkshopIds);
         BigDecimal currentFee = platformConfigService.getLeadAcceptanceFee();
+
+        List<Long> newWorkshopIds = new ArrayList<>();
+        List<Long> newOpportunityIds = new ArrayList<>();
 
         if (!newEligibleWorkshops.isEmpty()) {
             for (Workshop newWorkshop : newEligibleWorkshops) {
                 LeadOpportunity newOpportunity = new LeadOpportunity(request, newWorkshop, currentFee);
                 LeadOpportunity savedNewOpp = leadOpportunityRepository.save(newOpportunity);
+                newWorkshopIds.add(newWorkshop.getId());
+                newOpportunityIds.add(savedNewOpp.getId());
 
                 auditService.recordEvent(
                         MarketplaceEventType.OPPORTUNITY_CREATED,
@@ -384,7 +477,7 @@ public class LeadOpportunityService {
                         newWorkshop.getId(),
                         null,
                         "Re-matched opportunity generated for " + newWorkshop.getBusinessName() + " with fee ₹" + currentFee,
-                        "{\"feeSnapshot\": " + currentFee + "}"
+                        "{\"feeSnapshot\": " + currentFee + ", \"transferredFromWorkshopId\": " + workshop.getId() + ", \"transferredFromOpportunityId\": " + opportunity.getId() + "}"
                 );
             }
 
@@ -396,13 +489,40 @@ public class LeadOpportunityService {
                     request.getId(),
                     null,
                     null,
+                    currentUser.getId(),
+                    "Re-matched " + newEligibleWorkshops.size() + " new workshops for request " + request.getRequestReference() + " following transfer by " + workshop.getBusinessName(),
+                    "{\"newWorkshopsCount\": " + newEligibleWorkshops.size() + ", \"transferredFromWorkshopId\": " + workshop.getId() + ", \"newOpportunityIds\": " + newOpportunityIds + "}"
+            );
+        } else {
+            auditService.recordEvent(
+                    MarketplaceEventType.RE_MATCHED,
+                    request.getId(),
                     null,
-                    "Re-matched " + newEligibleWorkshops.size() + " new workshops for request " + request.getRequestReference(),
-                    "{\"newWorkshopsCount\": " + newEligibleWorkshops.size() + "}"
+                    null,
+                    currentUser.getId(),
+                    "No eligible replacement workshops available for request " + request.getRequestReference() + " following transfer. Status kept as RE_MATCHING.",
+                    "{\"newWorkshopsCount\": 0, \"transferredFromWorkshopId\": " + workshop.getId() + "}"
             );
         }
 
-        return mapToResponse(saved);
+        // Publish decoupled Spring application domain events
+        eventPublisher.publishEvent(new OpportunityTransferredEvent(
+                opportunity.getId(),
+                request.getId(),
+                workshop.getId(),
+                recordedReason,
+                now
+        ));
+        if (!newOpportunityIds.isEmpty()) {
+            eventPublisher.publishEvent(new OpportunityRematchedEvent(
+                    request.getId(),
+                    workshop.getId(),
+                    newWorkshopIds,
+                    newOpportunityIds
+            ));
+        }
+
+        return mapToResponse(opportunity);
     }
 
     public LeadOpportunityResponse mapToResponse(LeadOpportunity opp) {
