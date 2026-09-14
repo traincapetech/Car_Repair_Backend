@@ -17,6 +17,8 @@ public interface WorkshopPaymentRepository extends JpaRepository<WorkshopPayment
 
     Optional<WorkshopPayment> findByRazorpayOrderId(String razorpayOrderId);
 
+    Optional<WorkshopPayment> findByRazorpayPaymentId(String razorpayPaymentId);
+
     Optional<WorkshopPayment> findByOpportunityIdAndIdempotencyKey(Long opportunityId, String idempotencyKey);
 
     List<WorkshopPayment> findByOpportunityIdAndPaymentStatus(Long opportunityId, PaymentStatus status);

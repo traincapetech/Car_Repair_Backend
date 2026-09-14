@@ -161,11 +161,17 @@ public class WorkshopRefundService {
             );
 
             refund.setRazorpayRefundId(pr.getRefundId());
-            refund.setRefundStatus(RefundStatus.PENDING);
             refund.setProcessedAt(LocalDateTime.now());
-            refundRepository.save(refund);
 
-            payment.setPaymentStatus(PaymentStatus.REFUND_PENDING);
+            if ("processed".equalsIgnoreCase(pr.getStatus()) || "success".equalsIgnoreCase(pr.getStatus())) {
+                refund.setRefundStatus(RefundStatus.SUCCESS);
+                payment.setPaymentStatus(PaymentStatus.REFUNDED);
+            } else {
+                refund.setRefundStatus(RefundStatus.PENDING);
+                payment.setPaymentStatus(PaymentStatus.REFUND_PENDING);
+            }
+
+            refundRepository.save(refund);
             workshopPaymentRepository.save(payment);
 
             auditService.recordEvent(
@@ -174,8 +180,8 @@ public class WorkshopRefundService {
                     opportunity.getId(),
                     payment.getWorkshop().getId(),
                     null,
-                    "Razorpay refund initiated with reference: " + pr.getRefundId(),
-                    "{\"razorpayRefundId\": \"" + pr.getRefundId() + "\"}"
+                    "Razorpay refund processed with reference: " + pr.getRefundId() + " (status: " + pr.getStatus() + ")",
+                    "{\"razorpayRefundId\": \"" + pr.getRefundId() + "\", \"status\": \"" + pr.getStatus() + "\"}"
             );
         } catch (Exception e) {
             log.error("Failed to initiate Razorpay refund: {}", e.getMessage(), e);
@@ -186,6 +192,16 @@ public class WorkshopRefundService {
             payment.setPaymentStatus(PaymentStatus.REFUND_FAILED);
             payment.setFailureReason(e.getMessage());
             workshopPaymentRepository.save(payment);
+
+            auditService.recordEvent(
+                    MarketplaceEventType.REFUND_FAILED,
+                    opportunity.getServiceRequest().getId(),
+                    opportunity.getId(),
+                    payment.getWorkshop().getId(),
+                    null,
+                    "Razorpay refund failed: " + e.getMessage(),
+                    null
+            );
         }
     }
 

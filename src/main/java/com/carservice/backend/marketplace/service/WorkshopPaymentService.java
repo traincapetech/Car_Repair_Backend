@@ -7,6 +7,7 @@ import com.carservice.backend.marketplace.dto.VerifyPaymentRequest;
 import com.carservice.backend.marketplace.dto.WorkshopPaymentResponse;
 import com.carservice.backend.marketplace.entity.*;
 import com.carservice.backend.marketplace.enums.*;
+import com.carservice.backend.marketplace.exception.PaymentGatewayUnavailableException;
 import com.carservice.backend.marketplace.payment.PaymentGateway;
 import com.carservice.backend.marketplace.payment.PaymentOrder;
 import com.carservice.backend.marketplace.payment.RazorpayPaymentGateway;
@@ -112,6 +113,9 @@ public class WorkshopPaymentService {
 
         String razorpayOrderId = null;
         if (request.getPaymentMethod() == PaymentMethod.RAZORPAY) {
+            if (!paymentGateway.isAvailable()) {
+                throw new PaymentGatewayUnavailableException("Razorpay payment gateway is currently unavailable.");
+            }
             PaymentOrder order = paymentGateway.createOrder(fee, "INR", "OPP-" + opportunity.getId());
             razorpayOrderId = order.getOrderId();
         }
@@ -311,7 +315,7 @@ public class WorkshopPaymentService {
         }
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
     public WorkshopPaymentResponse verifyAndClaimRazorpayPayment(User currentUser, Long paymentId, VerifyPaymentRequest verifyRequest) {
         Workshop workshop = resolveWorkshop(currentUser);
 
@@ -325,6 +329,27 @@ public class WorkshopPaymentService {
         LeadOpportunity opportunity = payment.getOpportunity();
         ServiceRequest serviceRequest = opportunity.getServiceRequest();
 
+        if (!paymentGateway.isAvailable()) {
+            throw new PaymentGatewayUnavailableException("Razorpay payment gateway is currently unavailable.");
+        }
+
+        // Verify that the order ID matches the payment's stored order ID
+        if (payment.getRazorpayOrderId() == null || !payment.getRazorpayOrderId().equals(verifyRequest.getRazorpayOrderId())) {
+            payment.setPaymentStatus(PaymentStatus.FAILED);
+            payment.setFailureReason("Razorpay order ID mismatch");
+            workshopPaymentRepository.save(payment);
+            auditService.recordEvent(
+                    MarketplaceEventType.PAYMENT_FAILED,
+                    opportunity.getServiceRequest().getId(),
+                    opportunity.getId(),
+                    workshop.getId(),
+                    currentUser.getId(),
+                    "Razorpay payment verification failed: order ID mismatch",
+                    null
+            );
+            throw new IllegalArgumentException("Payment verification failed: order ID mismatch");
+        }
+
         // Verify Razorpay signature
         boolean isValid = paymentGateway.verifySignature(
                 verifyRequest.getRazorpayOrderId(),
@@ -336,6 +361,15 @@ public class WorkshopPaymentService {
             payment.setPaymentStatus(PaymentStatus.FAILED);
             payment.setFailureReason("Invalid Razorpay signature");
             workshopPaymentRepository.save(payment);
+            auditService.recordEvent(
+                    MarketplaceEventType.PAYMENT_FAILED,
+                    opportunity.getServiceRequest().getId(),
+                    opportunity.getId(),
+                    workshop.getId(),
+                    currentUser.getId(),
+                    "Razorpay payment verification failed: invalid signature",
+                    null
+            );
             throw new IllegalArgumentException("Payment verification failed: invalid signature");
         }
 
@@ -449,6 +483,9 @@ public class WorkshopPaymentService {
             // Create refund record
             refundService.createRefundRecord(savedPayment, RefundReason.OPPORTUNITY_ALREADY_ASSIGNED);
 
+            // Reload payment record from database to reflect updated status (REFUNDED, REFUND_PENDING, or REFUND_FAILED)
+            savedPayment = workshopPaymentRepository.findById(savedPayment.getId()).orElse(savedPayment);
+
             return mapToResponse(savedPayment);
         }
     }
@@ -507,7 +544,7 @@ public class WorkshopPaymentService {
     }
 
     private InitiatePaymentResponse mapToInitiateResponse(WorkshopPayment payment) {
-        String keyId = (paymentGateway instanceof RazorpayPaymentGateway rpg) ? rpg.getKeyId() : "rzp_test";
+        String keyId = paymentGateway.getKeyId();
         return new InitiatePaymentResponse(
                 payment.getId(),
                 payment.getOpportunity().getId(),

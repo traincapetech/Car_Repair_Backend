@@ -47,7 +47,15 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.springframework.test.context.TestPropertySource;
+
 @SpringBootTest
+@TestPropertySource(properties = {
+        "razorpay.enabled=true",
+        "razorpay.key-id=rzp_test_default",
+        "razorpay.key-secret=secret_test_default",
+        "razorpay.mock-gateway=true"
+})
 public class WorkshopPaymentIntegrationTest {
 
     private MockMvc mockMvc;

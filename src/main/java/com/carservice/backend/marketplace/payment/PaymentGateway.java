@@ -9,4 +9,10 @@ public interface PaymentGateway {
     boolean verifySignature(String orderId, String paymentId, String signature);
 
     PaymentRefund initiateRefund(String paymentId, BigDecimal amount, String reason);
+
+    boolean verifyWebhookSignature(String payload, String signature);
+
+    boolean isAvailable();
+
+    String getKeyId();
 }

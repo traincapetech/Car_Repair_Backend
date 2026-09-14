@@ -74,7 +74,9 @@ public class SecurityConfig {
                         "/api/v1/auth/logout",
                         "/api/v1/auth/forgot-password",
                         "/api/v1/auth/reset-password",
-                        "/api/v1/vehicle-catalog/**"
+                        "/api/v1/vehicle-catalog/**",
+                        "/api/v1/payments/razorpay/webhook",
+                        "/api/v1/partner/payments/razorpay/webhook"
                 ).permitAll()
                 .anyRequest().authenticated()
         )

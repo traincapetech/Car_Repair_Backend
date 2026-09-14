@@ -130,6 +130,32 @@ public class GlobalExceptionHandler {
                                                                 null));
         }
 
+        @ExceptionHandler(com.carservice.backend.marketplace.exception.PaymentGatewayUnavailableException.class)
+        public ResponseEntity<ApiResponse<Void>> handlePaymentGatewayUnavailable(
+                        com.carservice.backend.marketplace.exception.PaymentGatewayUnavailableException exception) {
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
+        @ExceptionHandler(com.carservice.backend.marketplace.exception.PaymentGatewayException.class)
+        public ResponseEntity<ApiResponse<Void>> handlePaymentGatewayException(
+                        com.carservice.backend.marketplace.exception.PaymentGatewayException exception) {
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
         @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
         public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadable(
                         org.springframework.http.converter.HttpMessageNotReadableException exception) {
