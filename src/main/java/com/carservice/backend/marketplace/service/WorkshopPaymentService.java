@@ -41,6 +41,8 @@ public class WorkshopPaymentService {
     private final PaymentGateway paymentGateway;
     private final MarketplaceAuditService auditService;
     private final LeadPaymentRepository leadPaymentRepository;
+    private final WorkshopJobService workshopJobService;
+    private final com.carservice.backend.booking.repository.BookingRepository bookingRepository;
 
     public WorkshopPaymentService(
             WorkshopPaymentRepository workshopPaymentRepository,
@@ -52,7 +54,9 @@ public class WorkshopPaymentService {
             WorkshopRefundService refundService,
             PaymentGateway paymentGateway,
             MarketplaceAuditService auditService,
-            LeadPaymentRepository leadPaymentRepository
+            LeadPaymentRepository leadPaymentRepository,
+            WorkshopJobService workshopJobService,
+            com.carservice.backend.booking.repository.BookingRepository bookingRepository
     ) {
         this.workshopPaymentRepository = workshopPaymentRepository;
         this.leadOpportunityRepository = leadOpportunityRepository;
@@ -64,6 +68,8 @@ public class WorkshopPaymentService {
         this.paymentGateway = paymentGateway;
         this.auditService = auditService;
         this.leadPaymentRepository = leadPaymentRepository;
+        this.workshopJobService = workshopJobService;
+        this.bookingRepository = bookingRepository;
     }
 
     private Workshop resolveWorkshop(User currentUser) {
@@ -277,6 +283,18 @@ public class WorkshopPaymentService {
                     null
             );
 
+            // Initialize Workshop Job
+            workshopJobService.createJobForAssignedOpportunity(serviceRequest, workshop, opportunity);
+
+            // Confirm linked Booking if present
+            if (serviceRequest.getBooking() != null) {
+                com.carservice.backend.booking.entity.Booking linkedBooking = serviceRequest.getBooking();
+                if (linkedBooking.getStatus() == com.carservice.backend.booking.enums.BookingStatus.PENDING) {
+                    linkedBooking.setStatus(com.carservice.backend.booking.enums.BookingStatus.CONFIRMED);
+                    bookingRepository.save(linkedBooking);
+                }
+            }
+
             return mapToResponse(savedPayment);
         } else {
             // RACE CONDITION: Another workshop claimed the request first!
@@ -448,6 +466,18 @@ public class WorkshopPaymentService {
                     "Service request " + serviceRequest.getRequestReference() + " assigned to " + workshop.getBusinessName(),
                     null
             );
+
+            // Initialize Workshop Job
+            workshopJobService.createJobForAssignedOpportunity(serviceRequest, workshop, opportunity);
+
+            // Confirm linked Booking if present
+            if (serviceRequest.getBooking() != null) {
+                com.carservice.backend.booking.entity.Booking linkedBooking = serviceRequest.getBooking();
+                if (linkedBooking.getStatus() == com.carservice.backend.booking.enums.BookingStatus.PENDING) {
+                    linkedBooking.setStatus(com.carservice.backend.booking.enums.BookingStatus.CONFIRMED);
+                    bookingRepository.save(linkedBooking);
+                }
+            }
 
             return mapToResponse(savedPayment);
         } else {

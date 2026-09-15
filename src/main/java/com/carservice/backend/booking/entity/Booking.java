@@ -90,6 +90,28 @@ public class Booking {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
+    @Column(name = "city", length = 100)
+    private String city;
+
+    @Column(name = "address", length = 255)
+    private String address;
+
+    @Column(name = "pincode", length = 10)
+    private String pincode;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
+
+    @Column(name = "service_request_reference", length = 32)
+    private String serviceRequestReference;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_request_id")
+    private com.carservice.backend.marketplace.entity.ServiceRequest serviceRequest;
+
     public Booking() {
     }
 
@@ -350,5 +372,64 @@ public class Booking {
 
     public void setCancelledAt(LocalDateTime cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getServiceRequestReference() {
+        return serviceRequestReference;
+    }
+
+    public void setServiceRequestReference(String serviceRequestReference) {
+        this.serviceRequestReference = serviceRequestReference;
+    }
+
+    public com.carservice.backend.marketplace.entity.ServiceRequest getServiceRequest() {
+        return serviceRequest;
+    }
+
+    public void setServiceRequest(com.carservice.backend.marketplace.entity.ServiceRequest serviceRequest) {
+        this.serviceRequest = serviceRequest;
+        if (serviceRequest != null && (this.serviceRequestReference == null || this.serviceRequestReference.isBlank())) {
+            this.serviceRequestReference = serviceRequest.getRequestReference();
+        }
     }
 }

@@ -27,6 +27,12 @@ public class ServiceRequestResponse {
     private BigDecimal totalAmount;
     private Long assignedWorkshopId;
     private String assignedWorkshopName;
+    private String assignedWorkshopPhone;
+    private String assignedWorkshopAddress;
+    private String bookingReference;
+    private Long bookingId;
+    private String jobStatus;
+    private Boolean isCancellable;
     private List<ServiceRequestItemResponse> items = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -192,5 +198,53 @@ public class ServiceRequestResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getAssignedWorkshopPhone() {
+        return assignedWorkshopPhone;
+    }
+
+    public void setAssignedWorkshopPhone(String assignedWorkshopPhone) {
+        this.assignedWorkshopPhone = assignedWorkshopPhone;
+    }
+
+    public String getAssignedWorkshopAddress() {
+        return assignedWorkshopAddress;
+    }
+
+    public void setAssignedWorkshopAddress(String assignedWorkshopAddress) {
+        this.assignedWorkshopAddress = assignedWorkshopAddress;
+    }
+
+    public String getBookingReference() {
+        return bookingReference;
+    }
+
+    public void setBookingReference(String bookingReference) {
+        this.bookingReference = bookingReference;
+    }
+
+    public Long getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(Long bookingId) {
+        this.bookingId = bookingId;
+    }
+
+    public String getJobStatus() {
+        return jobStatus;
+    }
+
+    public void setJobStatus(String jobStatus) {
+        this.jobStatus = jobStatus;
+    }
+
+    public Boolean getIsCancellable() {
+        return isCancellable;
+    }
+
+    public void setIsCancellable(Boolean cancellable) {
+        isCancellable = cancellable;
     }
 }

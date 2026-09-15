@@ -83,6 +83,16 @@ public class ServiceRequest {
     @OneToMany(mappedBy = "serviceRequest", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<LeadOpportunity> opportunities = new ArrayList<>();
 
+    @Column(name = "booking_reference", length = 32)
+    private String bookingReference;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private com.carservice.backend.booking.entity.Booking booking;
+
+    @OneToOne(mappedBy = "serviceRequest", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private WorkshopJob currentJob;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -298,5 +308,32 @@ public class ServiceRequest {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getBookingReference() {
+        return bookingReference;
+    }
+
+    public void setBookingReference(String bookingReference) {
+        this.bookingReference = bookingReference;
+    }
+
+    public com.carservice.backend.booking.entity.Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(com.carservice.backend.booking.entity.Booking booking) {
+        this.booking = booking;
+        if (booking != null && (this.bookingReference == null || this.bookingReference.isBlank())) {
+            this.bookingReference = booking.getBookingReference();
+        }
+    }
+
+    public WorkshopJob getCurrentJob() {
+        return currentJob;
+    }
+
+    public void setCurrentJob(WorkshopJob currentJob) {
+        this.currentJob = currentJob;
     }
 }

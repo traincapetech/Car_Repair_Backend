@@ -30,6 +30,12 @@ public class CreateBookingRequest {
     @Size(max = 1000, message = "Customer notes cannot exceed 1000 characters")
     private String customerNotes;
 
+    private String city;
+    private String address;
+    private String pincode;
+    private java.math.BigDecimal latitude;
+    private java.math.BigDecimal longitude;
+
     public CreateBookingRequest() {
     }
 
@@ -139,5 +145,45 @@ public class CreateBookingRequest {
 
     public void setCustomerNotes(String customerNotes) {
         this.customerNotes = customerNotes;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
+    }
+
+    public java.math.BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(java.math.BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public java.math.BigDecimal getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(java.math.BigDecimal longitude) {
+        this.longitude = longitude;
     }
 }

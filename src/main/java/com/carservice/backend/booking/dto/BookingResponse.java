@@ -36,6 +36,17 @@ public class BookingResponse {
     private BigDecimal estimatedPrice;
     private BigDecimal price;
 
+    // Lifecycle and workshop tracking fields:
+    private String serviceRequestReference;
+    private Long serviceRequestId;
+    private Long assignedWorkshopId;
+    private String assignedWorkshopName;
+    private String assignedWorkshopPhone;
+    private String assignedWorkshopAddress;
+    private String jobStatus;
+    private String serviceRequestStatus;
+    private Boolean isCancellable;
+
     public BookingResponse() {
     }
 
@@ -152,7 +163,7 @@ public class BookingResponse {
             servicePriceSnapshotVal = totalAmountVal;
         }
 
-        return new BookingResponse(
+        BookingResponse res = new BookingResponse(
                 booking.getId(),
                 booking.getBookingReference(),
                 vehicleSummary,
@@ -171,6 +182,37 @@ public class BookingResponse {
                 booking.getUpdatedAt(),
                 booking.getCancelledAt()
         );
+
+        if (booking.getServiceRequest() != null) {
+            com.carservice.backend.marketplace.entity.ServiceRequest sr = booking.getServiceRequest();
+            res.setServiceRequestId(sr.getId());
+            res.setServiceRequestReference(sr.getRequestReference());
+            if (sr.getStatus() != null) {
+                res.setServiceRequestStatus(sr.getStatus().name());
+            }
+            if (sr.getAssignedWorkshop() != null) {
+                res.setAssignedWorkshopId(sr.getAssignedWorkshop().getId());
+                res.setAssignedWorkshopName(sr.getAssignedWorkshop().getBusinessName());
+                res.setAssignedWorkshopPhone(sr.getAssignedWorkshop().getPhone());
+                res.setAssignedWorkshopAddress(sr.getAssignedWorkshop().getAddress() + ", " + sr.getAssignedWorkshop().getCity());
+            }
+            if (sr.getCurrentJob() != null) {
+                res.setJobStatus(sr.getCurrentJob().getStatus().name());
+            }
+        } else if (booking.getServiceRequestReference() != null) {
+            res.setServiceRequestReference(booking.getServiceRequestReference());
+        }
+
+        // Determine if cancellable
+        boolean cancellable = true;
+        if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.COMPLETED) {
+            cancellable = false;
+        } else if (booking.getServiceRequest() != null && booking.getServiceRequest().getCurrentJob() != null) {
+            cancellable = !booking.getServiceRequest().getCurrentJob().isPhysicalWorkStarted();
+        }
+        res.setIsCancellable(cancellable);
+
+        return res;
     }
 
     public Long getId() {
@@ -315,6 +357,78 @@ public class BookingResponse {
 
     public void setCancelledAt(LocalDateTime cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public String getServiceRequestReference() {
+        return serviceRequestReference;
+    }
+
+    public void setServiceRequestReference(String serviceRequestReference) {
+        this.serviceRequestReference = serviceRequestReference;
+    }
+
+    public Long getServiceRequestId() {
+        return serviceRequestId;
+    }
+
+    public void setServiceRequestId(Long serviceRequestId) {
+        this.serviceRequestId = serviceRequestId;
+    }
+
+    public Long getAssignedWorkshopId() {
+        return assignedWorkshopId;
+    }
+
+    public void setAssignedWorkshopId(Long assignedWorkshopId) {
+        this.assignedWorkshopId = assignedWorkshopId;
+    }
+
+    public String getAssignedWorkshopName() {
+        return assignedWorkshopName;
+    }
+
+    public void setAssignedWorkshopName(String assignedWorkshopName) {
+        this.assignedWorkshopName = assignedWorkshopName;
+    }
+
+    public String getAssignedWorkshopPhone() {
+        return assignedWorkshopPhone;
+    }
+
+    public void setAssignedWorkshopPhone(String assignedWorkshopPhone) {
+        this.assignedWorkshopPhone = assignedWorkshopPhone;
+    }
+
+    public String getAssignedWorkshopAddress() {
+        return assignedWorkshopAddress;
+    }
+
+    public void setAssignedWorkshopAddress(String assignedWorkshopAddress) {
+        this.assignedWorkshopAddress = assignedWorkshopAddress;
+    }
+
+    public String getJobStatus() {
+        return jobStatus;
+    }
+
+    public void setJobStatus(String jobStatus) {
+        this.jobStatus = jobStatus;
+    }
+
+    public String getServiceRequestStatus() {
+        return serviceRequestStatus;
+    }
+
+    public void setServiceRequestStatus(String serviceRequestStatus) {
+        this.serviceRequestStatus = serviceRequestStatus;
+    }
+
+    public Boolean getIsCancellable() {
+        return isCancellable;
+    }
+
+    public void setIsCancellable(Boolean cancellable) {
+        isCancellable = cancellable;
     }
 
     public static class VehicleSummary {

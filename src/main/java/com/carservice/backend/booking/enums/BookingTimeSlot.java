@@ -47,17 +47,17 @@ public enum BookingTimeSlot {
         if (slotString == null || slotString.trim().isEmpty()) {
             return false;
         }
-        String trimmed = slotString.trim();
-        return Arrays.stream(values()).anyMatch(s -> s.slot.equalsIgnoreCase(trimmed));
+        String normalized = slotString.trim().replaceAll("\\s*-\\s*", "-");
+        return Arrays.stream(values()).anyMatch(s -> s.slot.equalsIgnoreCase(normalized));
     }
 
     public static Optional<BookingTimeSlot> fromSlot(String slotString) {
         if (slotString == null) {
             return Optional.empty();
         }
-        String trimmed = slotString.trim();
+        String normalized = slotString.trim().replaceAll("\\s*-\\s*", "-");
         return Arrays.stream(values())
-                .filter(s -> s.slot.equalsIgnoreCase(trimmed))
+                .filter(s -> s.slot.equalsIgnoreCase(normalized))
                 .findFirst();
     }
 

@@ -12,5 +12,6 @@ public enum OpportunityStatus {
     EXPIRED,
     TRANSFERRED,
     CANCELLED,
-    LOST
+    LOST,
+    COMPLETED
 }

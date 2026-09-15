@@ -60,4 +60,28 @@ public class ServiceRequestController {
 
         return ResponseEntity.ok(ApiResponse.success("Service request fetched successfully", response));
     }
+
+    @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<ServiceRequestResponse>> cancelServiceRequest(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        User currentUser = (User) authentication.getPrincipal();
+        ServiceRequestResponse response = serviceRequestService.cancelServiceRequest(currentUser, id);
+
+        return ResponseEntity.ok(ApiResponse.success("Service request cancelled successfully", response));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<ServiceRequestResponse>> cancelServiceRequestPost(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        User currentUser = (User) authentication.getPrincipal();
+        ServiceRequestResponse response = serviceRequestService.cancelServiceRequest(currentUser, id);
+
+        return ResponseEntity.ok(ApiResponse.success("Service request cancelled successfully", response));
+    }
 }

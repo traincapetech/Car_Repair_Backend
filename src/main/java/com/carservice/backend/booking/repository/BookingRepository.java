@@ -19,6 +19,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         LEFT JOIN FETCH b.bookingServices bs
         LEFT JOIN FETCH bs.serviceCatalog sc
         LEFT JOIN FETCH b.service s
+        LEFT JOIN FETCH b.serviceRequest sr
+        LEFT JOIN FETCH sr.assignedWorkshop aw
+        LEFT JOIN FETCH sr.currentJob cj
         WHERE b.user.id = :userId
         ORDER BY b.createdAt DESC
     """)
@@ -30,6 +33,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         LEFT JOIN FETCH b.bookingServices bs
         LEFT JOIN FETCH bs.serviceCatalog sc
         LEFT JOIN FETCH b.service s
+        LEFT JOIN FETCH b.serviceRequest sr
+        LEFT JOIN FETCH sr.assignedWorkshop aw
+        LEFT JOIN FETCH sr.currentJob cj
         WHERE b.id = :id AND b.user.id = :userId
     """)
     Optional<Booking> findByIdAndUserIdWithDetails(@Param("id") Long id, @Param("userId") Long userId);
@@ -42,6 +48,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         LEFT JOIN FETCH b.bookingServices bs
         LEFT JOIN FETCH bs.serviceCatalog sc
         LEFT JOIN FETCH b.service s
+        LEFT JOIN FETCH b.serviceRequest sr
+        LEFT JOIN FETCH sr.assignedWorkshop aw
+        LEFT JOIN FETCH sr.currentJob cj
         WHERE b.bookingReference = :bookingReference AND b.user.id = :userId
     """)
     Optional<Booking> findByBookingReferenceAndUserId(@Param("bookingReference") String bookingReference, @Param("userId") Long userId);

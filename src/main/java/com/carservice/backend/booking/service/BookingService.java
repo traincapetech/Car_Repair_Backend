@@ -12,11 +12,15 @@ import com.carservice.backend.common.exception.InvalidBookingException;
 import com.carservice.backend.common.exception.InvalidBookingStateException;
 import com.carservice.backend.common.exception.ServiceCatalogNotFoundException;
 import com.carservice.backend.common.exception.VehicleNotFoundException;
+import com.carservice.backend.marketplace.entity.ServiceRequest;
+import com.carservice.backend.marketplace.service.ServiceRequestService;
 import com.carservice.backend.servicecatalog.entity.ServiceCatalog;
 import com.carservice.backend.servicecatalog.repository.ServiceCatalogRepository;
 import com.carservice.backend.user.entity.User;
 import com.carservice.backend.vehicle.entity.Vehicle;
 import com.carservice.backend.vehicle.repository.VehicleRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,18 +36,23 @@ import java.util.stream.Collectors;
 @Service
 public class BookingService {
 
+    private static final Logger log = LoggerFactory.getLogger(BookingService.class);
+
     private final BookingRepository bookingRepository;
     private final VehicleRepository vehicleRepository;
     private final ServiceCatalogRepository serviceCatalogRepository;
+    private final ServiceRequestService serviceRequestService;
 
     public BookingService(
             BookingRepository bookingRepository,
             VehicleRepository vehicleRepository,
-            ServiceCatalogRepository serviceCatalogRepository
+            ServiceCatalogRepository serviceCatalogRepository,
+            ServiceRequestService serviceRequestService
     ) {
         this.bookingRepository = bookingRepository;
         this.vehicleRepository = vehicleRepository;
         this.serviceCatalogRepository = serviceCatalogRepository;
+        this.serviceRequestService = serviceRequestService;
     }
 
     @Transactional
@@ -140,6 +149,13 @@ public class BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setCustomerNotes(request.getCustomerNotes() != null ? request.getCustomerNotes().trim() : null);
 
+        // Location fields
+        booking.setCity(request.getCity());
+        booking.setAddress(request.getAddress());
+        booking.setPincode(request.getPincode());
+        booking.setLatitude(request.getLatitude());
+        booking.setLongitude(request.getLongitude());
+
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (ServiceCatalog s : orderedServices) {
             BigDecimal finalPrice = s.calculateFinalPrice();
@@ -167,6 +183,17 @@ public class BookingService {
         booking.setEstimatedPrice(totalAmount.setScale(2, RoundingMode.HALF_UP));
 
         Booking saved = bookingRepository.save(booking);
+
+        // Synchronize with Marketplace ServiceRequest & Opportunity Matching
+        try {
+            ServiceRequest serviceRequest = serviceRequestService.createAndMatchServiceRequestForBooking(saved, orderedServices);
+            saved.setServiceRequest(serviceRequest);
+            saved.setServiceRequestReference(serviceRequest.getRequestReference());
+            saved = bookingRepository.save(saved);
+        } catch (Exception e) {
+            log.warn("Marketplace matching could not be completed for booking {}: {}", saved.getBookingReference(), e.getMessage());
+        }
+
         return BookingResponse.fromEntity(saved);
     }
 
@@ -205,9 +232,22 @@ public class BookingService {
             );
         }
 
-        booking.setStatus(BookingStatus.CANCELLED);
-        booking.setCancelledAt(LocalDateTime.now());
-        Booking updated = bookingRepository.save(booking);
-        return BookingResponse.fromEntity(updated);
+        if (booking.getServiceRequest() != null) {
+            if (!serviceRequestService.isCancellable(booking.getServiceRequest())) {
+                String stage = booking.getServiceRequest().getCurrentJob() != null
+                        ? booking.getServiceRequest().getCurrentJob().getStatus().name()
+                        : booking.getStatus().name();
+                throw new IllegalStateException("Cannot cancel booking once vehicle has been received or work is in progress. Current stage: " + stage);
+            }
+            serviceRequestService.cancelServiceRequest(user, booking.getServiceRequest().getId());
+            booking = bookingRepository.findByIdAndUserIdWithDetails(id, user.getId())
+                    .orElse(booking);
+        } else {
+            booking.setStatus(BookingStatus.CANCELLED);
+            booking.setCancelledAt(LocalDateTime.now());
+            booking = bookingRepository.save(booking);
+        }
+
+        return BookingResponse.fromEntity(booking);
     }
 }

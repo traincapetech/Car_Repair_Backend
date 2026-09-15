@@ -36,6 +36,7 @@ public class LeadOpportunityService {
     private final MarketplaceAuditService auditService;
     private final WorkshopPaymentRepository workshopPaymentRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final com.carservice.backend.marketplace.repository.WorkshopJobRepository workshopJobRepository;
 
     public LeadOpportunityService(
             LeadOpportunityRepository leadOpportunityRepository,
@@ -47,7 +48,8 @@ public class LeadOpportunityService {
             PlatformConfigService platformConfigService,
             MarketplaceAuditService auditService,
             WorkshopPaymentRepository workshopPaymentRepository,
-            ApplicationEventPublisher eventPublisher
+            ApplicationEventPublisher eventPublisher,
+            com.carservice.backend.marketplace.repository.WorkshopJobRepository workshopJobRepository
     ) {
         this.leadOpportunityRepository = leadOpportunityRepository;
         this.leadPaymentRepository = leadPaymentRepository;
@@ -59,6 +61,7 @@ public class LeadOpportunityService {
         this.auditService = auditService;
         this.workshopPaymentRepository = workshopPaymentRepository;
         this.eventPublisher = eventPublisher;
+        this.workshopJobRepository = workshopJobRepository;
     }
 
     private Workshop resolveWorkshop(User currentUser) {
@@ -438,6 +441,15 @@ public class LeadOpportunityService {
         }
         request.setStatus(ServiceRequestStatus.RE_MATCHING);
         serviceRequestRepository.save(request);
+
+        // Mark associated WorkshopJob as TRANSFERRED
+        workshopJobRepository.findByServiceRequestId(request.getId()).ifPresent(j -> {
+            if (j.getWorkshop().getId().equals(workshop.getId()) && j.getStatus() != com.carservice.backend.marketplace.enums.WorkshopJobStatus.TRANSFERRED) {
+                j.setStatus(com.carservice.backend.marketplace.enums.WorkshopJobStatus.TRANSFERRED);
+                j.setTransferredAt(now);
+                workshopJobRepository.save(j);
+            }
+        });
 
         // Exclude workshops that have transferred, declined, or currently hold an active opportunity
         List<LeadOpportunity> existingOpportunities = leadOpportunityRepository.findByServiceRequestId(request.getId());

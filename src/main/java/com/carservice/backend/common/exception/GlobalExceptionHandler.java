@@ -130,6 +130,19 @@ public class GlobalExceptionHandler {
                                                                 null));
         }
 
+        @ExceptionHandler(IllegalStateException.class)
+        public ResponseEntity<ApiResponse<Void>> handleIllegalState(
+                        IllegalStateException exception) {
+
+                return ResponseEntity
+                                .badRequest()
+                                .body(
+                                                new ApiResponse<>(
+                                                                false,
+                                                                exception.getMessage(),
+                                                                null));
+        }
+
         @ExceptionHandler(com.carservice.backend.marketplace.exception.PaymentGatewayUnavailableException.class)
         public ResponseEntity<ApiResponse<Void>> handlePaymentGatewayUnavailable(
                         com.carservice.backend.marketplace.exception.PaymentGatewayUnavailableException exception) {
