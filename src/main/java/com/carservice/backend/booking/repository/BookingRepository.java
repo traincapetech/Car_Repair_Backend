@@ -2,16 +2,21 @@ package com.carservice.backend.booking.repository;
 
 import com.carservice.backend.booking.entity.Booking;
 import com.carservice.backend.booking.enums.BookingStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
 
     @Query("""
         SELECT DISTINCT b FROM Booking b
@@ -85,4 +90,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("timeSlot") String timeSlot,
             @Param("bookingTime") LocalTime bookingTime
     );
+
+    @Query(value = "SELECT b FROM Booking b WHERE b.user.id = :userId AND (:status IS NULL OR b.status = :status)",
+           countQuery = "SELECT COUNT(b) FROM Booking b WHERE b.user.id = :userId AND (:status IS NULL OR b.status = :status)")
+    @EntityGraph(attributePaths = {"vehicle", "service"})
+    Page<Booking> findByUserIdAndOptionalStatus(@Param("userId") Long userId, @Param("status") BookingStatus status, Pageable pageable);
+
+    @Query("SELECT b.user.id, COUNT(b) FROM Booking b WHERE b.user.id IN :userIds GROUP BY b.user.id")
+    List<Object[]> countBookingsByUserIds(@Param("userIds") Collection<Long> userIds);
+
+    @Query("SELECT b.status, COUNT(b) FROM Booking b WHERE b.user.id = :userId GROUP BY b.status")
+    List<Object[]> countBookingsByStatusForUser(@Param("userId") Long userId);
 }
+
