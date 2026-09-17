@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface MarketplaceAuditEventRepository extends JpaRepository<MarketplaceAuditEvent, Long> {
     List<MarketplaceAuditEvent> findByServiceRequestIdOrderByCreatedAtDesc(Long serviceRequestId);
+    List<MarketplaceAuditEvent> findByServiceRequestIdOrderByCreatedAtAsc(Long serviceRequestId);
     List<MarketplaceAuditEvent> findByWorkshopIdOrderByCreatedAtDesc(Long workshopId);
     List<MarketplaceAuditEvent> findTop100ByOrderByCreatedAtDesc();
 }

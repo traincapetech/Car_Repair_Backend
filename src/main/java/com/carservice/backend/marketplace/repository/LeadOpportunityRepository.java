@@ -34,5 +34,46 @@ public interface LeadOpportunityRepository extends JpaRepository<LeadOpportunity
             @Param("transferredAt") LocalDateTime transferredAt,
             @Param("reason") String reason
     );
+
+    @Query("SELECT lo.workshop.id, COUNT(lo) FROM LeadOpportunity lo WHERE lo.workshop.id IN :workshopIds GROUP BY lo.workshop.id")
+    List<Object[]> countOpportunitiesByWorkshopIds(@Param("workshopIds") Collection<Long> workshopIds);
+
+    @Query("SELECT lo.workshop.id, COUNT(lo) FROM LeadOpportunity lo WHERE lo.workshop.id IN :workshopIds AND lo.status IN (com.carservice.backend.marketplace.enums.OpportunityStatus.ACCEPTED, com.carservice.backend.marketplace.enums.OpportunityStatus.PAID, com.carservice.backend.marketplace.enums.OpportunityStatus.CUSTOMER_DETAILS_UNLOCKED, com.carservice.backend.marketplace.enums.OpportunityStatus.ASSIGNED, com.carservice.backend.marketplace.enums.OpportunityStatus.COMPLETED) GROUP BY lo.workshop.id")
+    List<Object[]> countAcceptedOpportunitiesByWorkshopIds(@Param("workshopIds") Collection<Long> workshopIds);
+
+    @Query(value = """
+        SELECT lo FROM LeadOpportunity lo
+        JOIN FETCH lo.serviceRequest sr
+        LEFT JOIN FETCH sr.vehicle v
+        WHERE lo.workshop.id = :workshopId
+          AND (:status IS NULL OR lo.status = :status)
+        ORDER BY lo.createdAt DESC
+    """,
+    countQuery = """
+        SELECT COUNT(lo) FROM LeadOpportunity lo
+        WHERE lo.workshop.id = :workshopId
+          AND (:status IS NULL OR lo.status = :status)
+    """)
+    org.springframework.data.domain.Page<LeadOpportunity> findByWorkshopIdAndOptionalStatus(
+            @Param("workshopId") Long workshopId,
+            @Param("status") OpportunityStatus status,
+            org.springframework.data.domain.Pageable pageable
+    );
+
+    long countByWorkshopId(Long workshopId);
+
+    long countByWorkshopIdAndStatus(Long workshopId, OpportunityStatus status);
+
+    long countByWorkshopIdAndStatusIn(Long workshopId, Collection<OpportunityStatus> statuses);
+
+    @Query("SELECT lo.serviceRequest.id, COUNT(lo) FROM LeadOpportunity lo WHERE lo.serviceRequest.id IN :requestIds GROUP BY lo.serviceRequest.id")
+    List<Object[]> countByServiceRequestIds(@Param("requestIds") Collection<Long> requestIds);
+
+    @Query("SELECT lo FROM LeadOpportunity lo JOIN FETCH lo.workshop w LEFT JOIN FETCH lo.payment p WHERE lo.serviceRequest.id = :serviceRequestId ORDER BY lo.createdAt ASC")
+    List<LeadOpportunity> findByServiceRequestIdWithDetails(@Param("serviceRequestId") Long serviceRequestId);
+
+    long countByStatus(OpportunityStatus status);
+
+    long countByStatusIn(Collection<OpportunityStatus> statuses);
 }
 

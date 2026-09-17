@@ -162,7 +162,8 @@ public class LeadOpportunityService {
             return mapToResponse(opportunity);
         }
 
-        if (opportunity.getStatus() == OpportunityStatus.DECLINED
+        if (isOpportunityExpired(opportunity)
+                || opportunity.getStatus() == OpportunityStatus.DECLINED
                 || opportunity.getStatus() == OpportunityStatus.EXPIRED
                 || opportunity.getStatus() == OpportunityStatus.TRANSFERRED
                 || opportunity.getStatus() == OpportunityStatus.CANCELLED) {
@@ -266,7 +267,8 @@ public class LeadOpportunityService {
             return mapToResponse(opportunity);
         }
 
-        if (opportunity.getStatus() == OpportunityStatus.DECLINED
+        if (isOpportunityExpired(opportunity)
+                || opportunity.getStatus() == OpportunityStatus.DECLINED
                 || opportunity.getStatus() == OpportunityStatus.EXPIRED
                 || opportunity.getStatus() == OpportunityStatus.TRANSFERRED
                 || opportunity.getStatus() == OpportunityStatus.CANCELLED) {
@@ -470,6 +472,10 @@ public class LeadOpportunityService {
         }
 
         List<Workshop> newEligibleWorkshops = matchingEngineService.findEligibleWorkshops(request, excludedWorkshopIds);
+        int maxWorkshops = platformConfigService.getMaxWorkshopsPerRequest();
+        if (newEligibleWorkshops.size() > maxWorkshops) {
+            newEligibleWorkshops = newEligibleWorkshops.subList(0, maxWorkshops);
+        }
         BigDecimal currentFee = platformConfigService.getLeadAcceptanceFee();
 
         List<Long> newWorkshopIds = new ArrayList<>();
@@ -618,5 +624,23 @@ public class LeadOpportunityService {
 
         response.setCreatedAt(opp.getCreatedAt());
         return response;
+    }
+
+    private boolean isOpportunityExpired(LeadOpportunity opportunity) {
+        if (opportunity.getStatus() == OpportunityStatus.EXPIRED) {
+            return true;
+        }
+        if (opportunity.isCustomerDetailsUnlocked() || opportunity.getStatus() == OpportunityStatus.ACCEPTED) {
+            return false;
+        }
+        if (opportunity.getCreatedAt() != null && platformConfigService != null) {
+            int expiryMins = platformConfigService.getOpportunityExpiryMinutes();
+            if (opportunity.getCreatedAt().plusMinutes(expiryMins).isBefore(LocalDateTime.now())) {
+                opportunity.setStatus(OpportunityStatus.EXPIRED);
+                leadOpportunityRepository.save(opportunity);
+                return true;
+            }
+        }
+        return false;
     }
 }

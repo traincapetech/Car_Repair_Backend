@@ -67,6 +67,9 @@ public class Workshop {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "status_reason", length = 500)
+    private String statusReason;
+
     @OneToMany(mappedBy = "workshop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<WorkshopService> supportedServices = new ArrayList<>();
 
@@ -248,6 +251,14 @@ public class Workshop {
 
     public void setIsActive(Boolean active) {
         isActive = active;
+    }
+
+    public String getStatusReason() {
+        return statusReason;
+    }
+
+    public void setStatusReason(String statusReason) {
+        this.statusReason = statusReason;
     }
 
     public List<WorkshopService> getSupportedServices() {

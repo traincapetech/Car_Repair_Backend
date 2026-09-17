@@ -23,4 +23,10 @@ public interface WorkshopServiceRepository extends JpaRepository<WorkshopService
             @Param("workshopId") Long workshopId,
             @Param("serviceIds") Collection<Long> serviceIds
     );
+
+    @Query("SELECT ws.workshop.id, COUNT(ws) FROM WorkshopService ws WHERE ws.workshop.id IN :workshopIds AND ws.isActive = true GROUP BY ws.workshop.id")
+    List<Object[]> countActiveServicesByWorkshopIds(@Param("workshopIds") Collection<Long> workshopIds);
+
+    @Query("SELECT ws FROM WorkshopService ws JOIN FETCH ws.serviceCatalog sc WHERE ws.workshop.id = :workshopId ORDER BY sc.category ASC, sc.name ASC")
+    List<WorkshopService> findByWorkshopIdWithCatalog(@Param("workshopId") Long workshopId);
 }

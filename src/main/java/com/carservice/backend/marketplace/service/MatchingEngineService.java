@@ -24,13 +24,24 @@ public class MatchingEngineService {
 
     private final WorkshopRepository workshopRepository;
     private final WorkshopServiceRepository workshopServiceRepository;
+    private final PlatformConfigService platformConfigService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public MatchingEngineService(
+            WorkshopRepository workshopRepository,
+            WorkshopServiceRepository workshopServiceRepository,
+            PlatformConfigService platformConfigService
+    ) {
+        this.workshopRepository = workshopRepository;
+        this.workshopServiceRepository = workshopServiceRepository;
+        this.platformConfigService = platformConfigService;
+    }
 
     public MatchingEngineService(
             WorkshopRepository workshopRepository,
             WorkshopServiceRepository workshopServiceRepository
     ) {
-        this.workshopRepository = workshopRepository;
-        this.workshopServiceRepository = workshopServiceRepository;
+        this(workshopRepository, workshopServiceRepository, null);
     }
 
     @Transactional(readOnly = true)
@@ -106,9 +117,13 @@ public class MatchingEngineService {
                     wLat.doubleValue(), wLng.doubleValue()
             );
 
+            double defaultRadiusKm = platformConfigService != null
+                    ? platformConfigService.getMatchingDefaultRadiusKm()
+                    : DEFAULT_SERVICE_RADIUS_KM;
+
             double allowedRadiusKm = workshop.getServiceRadiusKm() != null
                     ? workshop.getServiceRadiusKm().doubleValue()
-                    : DEFAULT_SERVICE_RADIUS_KM;
+                    : defaultRadiusKm;
 
             boolean inRange = distanceKm <= allowedRadiusKm;
             log.debug("Workshop {} distance: {} km, allowed radius: {} km -> inRange: {}",

@@ -38,15 +38,27 @@ public class WalletService {
     private final WorkshopWalletRepository walletRepository;
     private final WalletTransactionRepository transactionRepository;
     private final WorkshopRepository workshopRepository;
+    private final PlatformConfigService platformConfigService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public WalletService(
+            WorkshopWalletRepository walletRepository,
+            WalletTransactionRepository transactionRepository,
+            WorkshopRepository workshopRepository,
+            PlatformConfigService platformConfigService
+    ) {
+        this.walletRepository = walletRepository;
+        this.transactionRepository = transactionRepository;
+        this.workshopRepository = workshopRepository;
+        this.platformConfigService = platformConfigService;
+    }
 
     public WalletService(
             WorkshopWalletRepository walletRepository,
             WalletTransactionRepository transactionRepository,
             WorkshopRepository workshopRepository
     ) {
-        this.walletRepository = walletRepository;
-        this.transactionRepository = transactionRepository;
-        this.workshopRepository = workshopRepository;
+        this(walletRepository, transactionRepository, workshopRepository, null);
     }
 
     @Transactional
@@ -95,11 +107,14 @@ public class WalletService {
      */
     @Transactional
     public TopupInitiateResponse initiateTopup(Long workshopId, BigDecimal amount, String description) {
-        if (amount == null || amount.compareTo(MIN_TOPUP_AMOUNT) < 0) {
-            throw new IllegalArgumentException("Minimum top-up amount is ₹" + MIN_TOPUP_AMOUNT);
+        BigDecimal minAmount = platformConfigService != null ? platformConfigService.getWalletMinTopup() : MIN_TOPUP_AMOUNT;
+        BigDecimal maxAmount = platformConfigService != null ? platformConfigService.getWalletMaxTopup() : MAX_TOPUP_AMOUNT;
+
+        if (amount == null || amount.compareTo(minAmount) < 0) {
+            throw new IllegalArgumentException("Minimum top-up amount is ₹" + minAmount);
         }
-        if (amount.compareTo(MAX_TOPUP_AMOUNT) > 0) {
-            throw new IllegalArgumentException("Maximum top-up amount per transaction is ₹" + MAX_TOPUP_AMOUNT);
+        if (amount.compareTo(maxAmount) > 0) {
+            throw new IllegalArgumentException("Maximum top-up amount per transaction is ₹" + maxAmount);
         }
 
         Workshop workshop = workshopRepository.findById(workshopId)

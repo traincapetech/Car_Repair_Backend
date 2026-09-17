@@ -30,6 +30,8 @@ import com.carservice.backend.user.entity.User;
 import com.carservice.backend.user.enums.UserRole;
 import com.carservice.backend.vehicle.entity.Vehicle;
 import com.carservice.backend.vehicle.repository.VehicleRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ServiceRequestService {
+
+    private static final Logger log = LoggerFactory.getLogger(ServiceRequestService.class);
 
     private final ServiceRequestRepository serviceRequestRepository;
     private final VehicleRepository vehicleRepository;
@@ -202,8 +206,18 @@ public class ServiceRequestService {
                 "{\"totalAmount\": " + savedRequest.getTotalAmount() + ", \"itemsCount\": " + services.size() + "}"
         );
 
-        // 6. Match eligible workshops
+        // 6. Match eligible workshops if marketplace is enabled
+        if (!platformConfigService.isMarketplaceEnabled()) {
+            log.info("Marketplace matching is disabled by configuration. Request {} remains in SUBMITTED state.",
+                    savedRequest.getRequestReference());
+            return mapToResponse(savedRequest);
+        }
+
         List<Workshop> matchedWorkshops = matchingEngineService.findEligibleWorkshops(savedRequest, Collections.emptySet());
+        int maxWorkshops = platformConfigService.getMaxWorkshopsPerRequest();
+        if (matchedWorkshops.size() > maxWorkshops) {
+            matchedWorkshops = matchedWorkshops.subList(0, maxWorkshops);
+        }
         BigDecimal currentFee = platformConfigService.getLeadAcceptanceFee();
 
         if (!matchedWorkshops.isEmpty()) {
@@ -283,8 +297,18 @@ public class ServiceRequestService {
                 "{\"totalAmount\": " + savedRequest.getTotalAmount() + ", \"itemsCount\": " + services.size() + "}"
         );
 
-        // Match eligible workshops
+        // Match eligible workshops if marketplace is enabled
+        if (!platformConfigService.isMarketplaceEnabled()) {
+            log.info("Marketplace matching is disabled by configuration. Request {} remains in SUBMITTED state.",
+                    savedRequest.getRequestReference());
+            return savedRequest;
+        }
+
         List<Workshop> matchedWorkshops = matchingEngineService.findEligibleWorkshops(savedRequest, Collections.emptySet());
+        int maxWorkshops = platformConfigService.getMaxWorkshopsPerRequest();
+        if (matchedWorkshops.size() > maxWorkshops) {
+            matchedWorkshops = matchedWorkshops.subList(0, maxWorkshops);
+        }
         BigDecimal currentFee = platformConfigService.getLeadAcceptanceFee();
 
         if (!matchedWorkshops.isEmpty()) {

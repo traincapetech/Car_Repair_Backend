@@ -101,5 +101,26 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b.status, COUNT(b) FROM Booking b WHERE b.user.id = :userId GROUP BY b.status")
     List<Object[]> countBookingsByStatusForUser(@Param("userId") Long userId);
+
+    @Query(value = """
+        SELECT b FROM Booking b
+        JOIN FETCH b.vehicle v
+        LEFT JOIN FETCH b.service s
+        LEFT JOIN FETCH b.serviceRequest sr
+        WHERE sr.assignedWorkshop.id = :workshopId
+          AND (:status IS NULL OR b.status = :status)
+        ORDER BY b.createdAt DESC
+    """,
+    countQuery = """
+        SELECT COUNT(b) FROM Booking b
+        JOIN b.serviceRequest sr
+        WHERE sr.assignedWorkshop.id = :workshopId
+          AND (:status IS NULL OR b.status = :status)
+    """)
+    Page<Booking> findBookingsByWorkshopIdAndOptionalStatus(
+            @Param("workshopId") Long workshopId,
+            @Param("status") BookingStatus status,
+            Pageable pageable
+    );
 }
 
