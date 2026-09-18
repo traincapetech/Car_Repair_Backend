@@ -632,7 +632,7 @@ public class MarketplaceIntegrationTest {
 
         mockMvc.perform(post("/api/v1/partner/opportunities/" + oppA.getId() + "/pay/wallet")
                         .header("Authorization", "Bearer " + partnerTokenA))
-                .andExpect(status().is5xxServerError()); // IllegalStateException mapped or caught
+                .andExpect(status().isBadRequest()); // IllegalStateException mapped to 400 Bad Request
     }
 
     // =========================================================================
