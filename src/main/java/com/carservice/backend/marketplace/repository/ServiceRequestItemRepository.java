@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ServiceRequestItemRepository extends JpaRepository<ServiceRequestItem, Long> {
     List<ServiceRequestItem> findByServiceRequestId(Long serviceRequestId);
+
+    boolean existsByServiceCatalogId(Long serviceCatalogId);
 }

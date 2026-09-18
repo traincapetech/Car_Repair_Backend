@@ -29,4 +29,6 @@ public interface WorkshopServiceRepository extends JpaRepository<WorkshopService
 
     @Query("SELECT ws FROM WorkshopService ws JOIN FETCH ws.serviceCatalog sc WHERE ws.workshop.id = :workshopId ORDER BY sc.category ASC, sc.name ASC")
     List<WorkshopService> findByWorkshopIdWithCatalog(@Param("workshopId") Long workshopId);
+
+    boolean existsByServiceCatalogId(Long serviceCatalogId);
 }

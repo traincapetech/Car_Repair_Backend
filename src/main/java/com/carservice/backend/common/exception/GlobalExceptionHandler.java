@@ -27,6 +27,14 @@ public class GlobalExceptionHandler {
                                                                 null));
         }
 
+        @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+        public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(
+                        org.springframework.web.server.ResponseStatusException exception) {
+                return ResponseEntity
+                                .status(exception.getStatusCode())
+                                .body(ApiResponse.error(exception.getReason() != null ? exception.getReason() : exception.getMessage()));
+        }
+
         @ExceptionHandler(Exception.class)
         public ResponseEntity<ApiResponse<Void>> handleException(
                         Exception exception) {

@@ -122,5 +122,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("status") BookingStatus status,
             Pageable pageable
     );
+
+    boolean existsByServiceId(Long serviceId);
 }
 

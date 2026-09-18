@@ -75,8 +75,43 @@ public class WorkshopJobService {
         if (existing.isPresent()) {
             WorkshopJob current = existing.get();
             if (current.getStatus() == WorkshopJobStatus.TRANSFERRED || current.getStatus() == WorkshopJobStatus.CANCELLED) {
-                // Re-matched job after transfer - create new job
-                log.info("Creating new workshop job after previous job #{} was {}", current.getId(), current.getStatus());
+                log.info("Reassigning workshop job #{} to workshop '{}' after previous status was {}",
+                        current.getId(), workshop.getBusinessName(), current.getStatus());
+                current.setWorkshop(workshop);
+                current.setOpportunity(opportunity);
+                current.setStatus(WorkshopJobStatus.ASSIGNED);
+                current.setAssignedAt(LocalDateTime.now());
+                current.setVehicleReceivedAt(null);
+                current.setInspectionStartedAt(null);
+                current.setWorkStartedAt(null);
+                current.setReadyForDeliveryAt(null);
+                current.setCompletedAt(null);
+                current.setCancelledAt(null);
+                current.setTransferredAt(null);
+                current.setCancellationReason(null);
+                WorkshopJob savedJob = workshopJobRepository.save(current);
+                serviceRequest.setCurrentJob(savedJob);
+                serviceRequestRepository.save(serviceRequest);
+
+                auditService.recordEvent(
+                        MarketplaceEventType.JOB_STATUS_CHANGED,
+                        serviceRequest.getId(),
+                        opportunity.getId(),
+                        workshop.getId(),
+                        null,
+                        "Workshop job #" + savedJob.getJobReference() + " reassigned in status ASSIGNED to " + workshop.getBusinessName(),
+                        "{\"jobReference\": \"" + savedJob.getJobReference() + "\", \"status\": \"ASSIGNED\"}"
+                );
+
+                notificationService.notifyCustomer(
+                        serviceRequest.getUser().getId(),
+                        "WORKSHOP_ASSIGNED",
+                        "Service Centre Assigned",
+                        workshop.getBusinessName() + " has been assigned to your service request " + serviceRequest.getRequestReference(),
+                        Map.of("workshopName", workshop.getBusinessName(), "requestReference", serviceRequest.getRequestReference())
+                );
+
+                return savedJob;
             } else {
                 return current;
             }
