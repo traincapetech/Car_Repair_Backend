@@ -27,15 +27,20 @@ import com.carservice.backend.user.dto.DeactivateAccountRequest;
 import com.carservice.backend.user.dto.ForgotPasswordRequest;
 import com.carservice.backend.user.dto.ResetPasswordRequest;
 
+import com.carservice.backend.admin.service.AuditService;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class UserController {
 
         private final UserService userService;
+        private final AuditService auditService;
 
         public UserController(
-                        UserService userService) {
+                        UserService userService,
+                        AuditService auditService) {
                 this.userService = userService;
+                this.auditService = auditService;
         }
 
         @PostMapping("/register/customer")
@@ -57,12 +62,37 @@ public class UserController {
         public ResponseEntity<ApiResponse<LoginResponse>> login(
                         @Valid @RequestBody LoginRequest request) {
 
-                LoginResponse loginResponse = userService.login(request);
-
-                return ResponseEntity.ok(
-                                ApiResponse.success(
-                                                "Login successful",
-                                                loginResponse));
+                try {
+                        LoginResponse loginResponse = userService.login(request);
+                        if (loginResponse.user() != null && com.carservice.backend.user.enums.UserRole.ADMIN.equals(loginResponse.user().getRole())) {
+                                auditService.record(
+                                                "ADMIN_LOGIN",
+                                                "USER",
+                                                String.valueOf(loginResponse.user().getId()),
+                                                "Admin login successful for " + loginResponse.user().getEmail(),
+                                                "SUCCESS",
+                                                null,
+                                                null,
+                                                java.util.Map.of("email", loginResponse.user().getEmail(), "role", "ADMIN")
+                                );
+                        }
+                        return ResponseEntity.ok(
+                                        ApiResponse.success(
+                                                        "Login successful",
+                                                        loginResponse));
+                } catch (Exception e) {
+                        auditService.record(
+                                        "LOGIN_FAILED",
+                                        "SECURITY",
+                                        request.getEmail(),
+                                        "Failed login attempt for email: " + request.getEmail(),
+                                        "FAILED",
+                                        null,
+                                        null,
+                                        java.util.Map.of("attemptedEmail", request.getEmail(), "error", e.getMessage() != null ? e.getMessage() : "Invalid credentials")
+                        );
+                        throw e;
+                }
         }
 
         @PostMapping("/refresh")
@@ -80,7 +110,22 @@ public class UserController {
 
         @PostMapping("/logout")
         public ResponseEntity<ApiResponse<Void>> logout(
-                        @Valid @RequestBody LogoutRequest request) {
+                        @Valid @RequestBody LogoutRequest request,
+                        Authentication authentication) {
+
+                if (authentication != null && authentication.getPrincipal() instanceof User user && com.carservice.backend.user.enums.UserRole.ADMIN.equals(user.getRole())) {
+                        auditService.record(
+                                        user,
+                                        "ADMIN_LOGOUT",
+                                        "USER",
+                                        String.valueOf(user.getId()),
+                                        "Admin user logged out",
+                                        "SUCCESS",
+                                        null,
+                                        null,
+                                        java.util.Map.of("email", user.getEmail(), "role", "ADMIN")
+                        );
+                }
 
                 userService.logout(request);
 

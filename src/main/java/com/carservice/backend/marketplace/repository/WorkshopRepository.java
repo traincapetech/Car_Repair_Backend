@@ -16,7 +16,10 @@ import java.util.Optional;
 public interface WorkshopRepository extends JpaRepository<Workshop, Long> {
     Optional<Workshop> findByUserId(Long userId);
     List<Workshop> findByIsActiveTrueAndVerificationStatus(WorkshopVerificationStatus verificationStatus);
-    List<Workshop> findByCityIgnoreCaseAndIsActiveTrue(String city);
+    Optional<Workshop> findByEmail(String email);
+    Optional<Workshop> findByPhone(String phone);
+    boolean existsByEmail(String email);
+    boolean existsByPhone(String phone);
 
     @Query(value = """
         SELECT w FROM Workshop w

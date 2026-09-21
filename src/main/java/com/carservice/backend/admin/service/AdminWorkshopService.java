@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,7 @@ public class AdminWorkshopService {
     private final MarketplaceAuditService marketplaceAuditService;
     private final WalletService walletService;
     private final WorkshopJobService workshopJobService;
+    private final AuditService auditService;
 
     public AdminWorkshopService(
             WorkshopRepository workshopRepository,
@@ -57,7 +59,8 @@ public class AdminWorkshopService {
             RefundRepository refundRepository,
             MarketplaceAuditService marketplaceAuditService,
             WalletService walletService,
-            WorkshopJobService workshopJobService
+            WorkshopJobService workshopJobService,
+            AuditService auditService
     ) {
         this.workshopRepository = workshopRepository;
         this.workshopServiceRepository = workshopServiceRepository;
@@ -71,6 +74,7 @@ public class AdminWorkshopService {
         this.marketplaceAuditService = marketplaceAuditService;
         this.walletService = walletService;
         this.workshopJobService = workshopJobService;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -222,6 +226,14 @@ public class AdminWorkshopService {
         response.setVerificationStatus(workshop.getVerificationStatus());
         response.setIsActive(workshop.getIsActive());
         response.setStatusReason(workshop.getStatusReason());
+        if (workshop.getOwnerName() != null && !workshop.getOwnerName().isBlank()) {
+            response.setOwnerName(workshop.getOwnerName());
+        }
+        response.setOpeningTime(workshop.getOpeningTime());
+        response.setClosingTime(workshop.getClosingTime());
+        response.setWorkingDays(workshop.getWorkingDays());
+        response.setApprovedAt(workshop.getApprovedAt());
+        response.setApprovedBy(workshop.getApprovedBy());
         response.setCreatedAt(workshop.getCreatedAt());
         response.setUpdatedAt(workshop.getUpdatedAt());
 
@@ -320,6 +332,18 @@ public class AdminWorkshopService {
                 metadataJson
         );
 
+        auditService.record(
+                adminUser,
+                "WORKSHOP_STATUS_CHANGED",
+                "WORKSHOP",
+                String.valueOf(workshopId),
+                desc,
+                "SUCCESS",
+                Map.of("id", workshopId, "isActive", currentActive),
+                Map.of("id", workshopId, "isActive", targetActive),
+                Map.of("businessName", workshop.getBusinessName(), "reason", reason != null ? reason : "")
+        );
+
         log.info("AUDIT: Admin [{}] changed workshop [{}] status from [{}] to [{}] with reason: {}",
                 adminUser != null ? adminUser.getEmail() : "SYSTEM",
                 workshop.getBusinessName(),
@@ -350,8 +374,17 @@ public class AdminWorkshopService {
         workshop.setVerificationStatus(targetStatus);
         workshop.setStatusReason(reason);
 
-        // If suspended, also deactivate operational status
-        if (targetStatus == WorkshopVerificationStatus.SUSPENDED) {
+        // If approved/verified: activate workshop operational status and set approval metadata
+        if (targetStatus == WorkshopVerificationStatus.VERIFIED) {
+            workshop.setIsActive(true);
+            workshop.setApprovedAt(LocalDateTime.now());
+            if (adminUser != null) {
+                workshop.setApprovedBy(adminUser.getId());
+            }
+        }
+
+        // If suspended or rejected: deactivate operational status
+        if (targetStatus == WorkshopVerificationStatus.SUSPENDED || targetStatus == WorkshopVerificationStatus.REJECTED) {
             workshop.setIsActive(false);
         }
 
@@ -359,8 +392,8 @@ public class AdminWorkshopService {
 
         String desc = "Workshop verification status changed from " + currentStatus + " to " + targetStatus
                 + (reason != null ? ". Reason: " + reason : "");
-        String metadataJson = String.format("{\"oldVerificationStatus\":\"%s\",\"newVerificationStatus\":\"%s\",\"reason\":%s}",
-                currentStatus, targetStatus, reason != null ? "\"" + reason.replace("\"", "\\\"") + "\"" : "null");
+        String metadataJson = String.format("{\"oldVerificationStatus\":\"%s\",\"newVerificationStatus\":\"%s\",\"reason\":%s,\"isActive\":%s}",
+                currentStatus, targetStatus, reason != null ? "\"" + reason.replace("\"", "\\\"") + "\"" : "null", workshop.getIsActive());
 
         marketplaceAuditService.recordEvent(
                 MarketplaceEventType.WORKSHOP_VERIFICATION_CHANGED,
@@ -372,14 +405,90 @@ public class AdminWorkshopService {
                 metadataJson
         );
 
-        log.info("AUDIT: Admin [{}] changed workshop [{}] verification from [{}] to [{}] with reason: {}",
+        String specificAction;
+        if (targetStatus == WorkshopVerificationStatus.VERIFIED) {
+            specificAction = (currentStatus == WorkshopVerificationStatus.SUSPENDED) ? "WORKSHOP_REACTIVATED" : "WORKSHOP_APPROVED";
+        } else if (targetStatus == WorkshopVerificationStatus.REJECTED) {
+            specificAction = "WORKSHOP_REJECTED";
+        } else if (targetStatus == WorkshopVerificationStatus.SUSPENDED) {
+            specificAction = "WORKSHOP_SUSPENDED";
+        } else {
+            specificAction = "WORKSHOP_VERIFICATION_CHANGED";
+        }
+
+        auditService.record(
+                adminUser,
+                specificAction,
+                "WORKSHOP",
+                String.valueOf(workshopId),
+                desc,
+                "SUCCESS",
+                Map.of("id", workshopId, "verificationStatus", currentStatus.name()),
+                Map.of("id", workshopId, "verificationStatus", targetStatus.name(), "isActive", workshop.getIsActive()),
+                Map.of("businessName", workshop.getBusinessName(), "reason", reason != null ? reason : "")
+        );
+
+        if (!"WORKSHOP_VERIFICATION_CHANGED".equals(specificAction)) {
+            auditService.record(
+                    adminUser,
+                    "WORKSHOP_VERIFICATION_CHANGED",
+                    "WORKSHOP",
+                    String.valueOf(workshopId),
+                    desc,
+                    "SUCCESS",
+                    Map.of("id", workshopId, "verificationStatus", currentStatus.name()),
+                    Map.of("id", workshopId, "verificationStatus", targetStatus.name(), "isActive", workshop.getIsActive()),
+                    Map.of("businessName", workshop.getBusinessName(), "reason", reason != null ? reason : "", "specificAction", specificAction)
+            );
+        }
+
+        log.info("AUDIT: Admin [{}] changed workshop [{}] verification from [{}] to [{}] (isActive={}) with reason: {}",
                 adminUser != null ? adminUser.getEmail() : "SYSTEM",
                 workshop.getBusinessName(),
                 currentStatus,
                 targetStatus,
+                workshop.getIsActive(),
                 reason);
 
         return getWorkshopDetail(workshopId);
+    }
+
+    @Transactional
+    public AdminWorkshopDetailResponse approveWorkshop(Long workshopId, User adminUser) {
+        Workshop workshop = findWorkshopOrThrow(workshopId);
+        if (workshop.getVerificationStatus() == WorkshopVerificationStatus.VERIFIED && Boolean.TRUE.equals(workshop.getIsActive())) {
+            throw new IllegalArgumentException("Workshop is already approved and active");
+        }
+        UpdateWorkshopVerificationRequest req = new UpdateWorkshopVerificationRequest(WorkshopVerificationStatus.VERIFIED, "Administrative verification approved");
+        return updateWorkshopVerification(workshopId, req, adminUser);
+    }
+
+    @Transactional
+    public AdminWorkshopDetailResponse rejectWorkshop(Long workshopId, String reason, User adminUser) {
+        if (reason == null || reason.trim().isBlank()) {
+            throw new IllegalArgumentException("A reason is required when rejecting a workshop");
+        }
+        UpdateWorkshopVerificationRequest req = new UpdateWorkshopVerificationRequest(WorkshopVerificationStatus.REJECTED, reason.trim());
+        return updateWorkshopVerification(workshopId, req, adminUser);
+    }
+
+    @Transactional
+    public AdminWorkshopDetailResponse suspendWorkshop(Long workshopId, String reason, User adminUser) {
+        if (reason == null || reason.trim().isBlank()) {
+            throw new IllegalArgumentException("A reason is required when suspending a workshop");
+        }
+        UpdateWorkshopVerificationRequest req = new UpdateWorkshopVerificationRequest(WorkshopVerificationStatus.SUSPENDED, reason.trim());
+        return updateWorkshopVerification(workshopId, req, adminUser);
+    }
+
+    @Transactional
+    public AdminWorkshopDetailResponse reactivateWorkshop(Long workshopId, User adminUser) {
+        Workshop workshop = findWorkshopOrThrow(workshopId);
+        if (Boolean.TRUE.equals(workshop.getIsActive()) && workshop.getVerificationStatus() == WorkshopVerificationStatus.VERIFIED) {
+            throw new IllegalArgumentException("Workshop is already active and verified");
+        }
+        UpdateWorkshopVerificationRequest req = new UpdateWorkshopVerificationRequest(WorkshopVerificationStatus.VERIFIED, "Reactivated by administrator");
+        return updateWorkshopVerification(workshopId, req, adminUser);
     }
 
     @Transactional(readOnly = true)

@@ -98,6 +98,18 @@ public class MatchingEngineService {
             }
         }
 
+        // Sort by distance ascending (nearest-first) when coordinates are available
+        if (serviceRequest.getLatitude() != null && serviceRequest.getLongitude() != null) {
+            double reqLat = serviceRequest.getLatitude().doubleValue();
+            double reqLng = serviceRequest.getLongitude().doubleValue();
+            matchedWorkshops.sort(Comparator.comparingDouble(w -> {
+                if (w.getLatitude() != null && w.getLongitude() != null) {
+                    return calculateHaversineDistance(reqLat, reqLng, w.getLatitude().doubleValue(), w.getLongitude().doubleValue());
+                }
+                return Double.MAX_VALUE;
+            }));
+        }
+
         log.info("Matching engine found {} eligible workshops for request {}",
                 matchedWorkshops.size(), serviceRequest.getRequestReference());
 

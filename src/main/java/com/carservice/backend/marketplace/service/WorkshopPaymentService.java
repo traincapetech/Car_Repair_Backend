@@ -77,9 +77,16 @@ public class WorkshopPaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("No workshop partner account found for user: " + currentUser.getEmail()));
     }
 
+    private void validateWorkshopApprovedAndActive(Workshop workshop) {
+        if (workshop.getVerificationStatus() != WorkshopVerificationStatus.VERIFIED || !Boolean.TRUE.equals(workshop.getIsActive())) {
+            throw new IllegalStateException("Workshop is not approved or active. Verification status: " + workshop.getVerificationStatus());
+        }
+    }
+
     @Transactional
     public InitiatePaymentResponse initiatePayment(User currentUser, InitiatePaymentRequest request) {
         Workshop workshop = resolveWorkshop(currentUser);
+        validateWorkshopApprovedAndActive(workshop);
 
         LeadOpportunity opportunity = leadOpportunityRepository.findById(request.getOpportunityId())
                 .orElseThrow(() -> new ResourceNotFoundException("Opportunity not found with id: " + request.getOpportunityId()));
@@ -157,6 +164,7 @@ public class WorkshopPaymentService {
     @Transactional
     public WorkshopPaymentResponse claimOpportunityWithWallet(User currentUser, Long opportunityId, String idempotencyKey) {
         Workshop workshop = resolveWorkshop(currentUser);
+        validateWorkshopApprovedAndActive(workshop);
 
         LeadOpportunity opportunity = leadOpportunityRepository.findById(opportunityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Opportunity not found with id: " + opportunityId));

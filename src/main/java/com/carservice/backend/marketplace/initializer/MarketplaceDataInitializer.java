@@ -38,6 +38,9 @@ public class MarketplaceDataInitializer implements ApplicationRunner {
     private final WalletTransactionRepository transactionRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @org.springframework.beans.factory.annotation.Value("${workshop.seeding.enabled:false}")
+    private boolean workshopSeedingEnabled;
+
     public MarketplaceDataInitializer(
             PlatformConfigRepository platformConfigRepository,
             UserRepository userRepository,
@@ -63,7 +66,11 @@ public class MarketplaceDataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         try {
             seedPlatformConfig();
-            seedWorkshops();
+            if (workshopSeedingEnabled) {
+                seedWorkshops();
+            } else {
+                log.info("Workshop automatic seeding is disabled (workshop.seeding.enabled=false). Workshops must self-register or be onboarded by Admin.");
+            }
             log.info("Marketplace data initialization completed successfully.");
         } catch (Exception e) {
             log.error("Error during marketplace data initialization: {}", e.getMessage(), e);

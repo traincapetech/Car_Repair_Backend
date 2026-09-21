@@ -31,17 +31,20 @@ public class AdminCustomerService {
     private final VehicleRepository vehicleRepository;
     private final BookingRepository bookingRepository;
     private final ServiceRequestRepository serviceRequestRepository;
+    private final AuditService auditService;
 
     public AdminCustomerService(
             UserRepository userRepository,
             VehicleRepository vehicleRepository,
             BookingRepository bookingRepository,
-            ServiceRequestRepository serviceRequestRepository
+            ServiceRequestRepository serviceRequestRepository,
+            AuditService auditService
     ) {
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
         this.bookingRepository = bookingRepository;
         this.serviceRequestRepository = serviceRequestRepository;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -250,6 +253,18 @@ public class AdminCustomerService {
 
         customer.setIsActive(targetStatus);
         userRepository.save(customer);
+
+        auditService.record(
+                adminUser,
+                "CUSTOMER_STATUS_CHANGED",
+                "CUSTOMER",
+                String.valueOf(customerId),
+                "Customer account status changed from " + (currentStatus ? "ACTIVE" : "INACTIVE") + " to " + (targetStatus ? "ACTIVE" : "INACTIVE"),
+                "SUCCESS",
+                Map.of("id", customerId, "isActive", currentStatus),
+                Map.of("id", customerId, "isActive", targetStatus),
+                Map.of("customerEmail", customer.getEmail(), "customerName", customer.getName() != null ? customer.getName() : "")
+        );
 
         log.info("AUDIT: Admin [id={}, email={}] changed customer [id={}, email={}] account status from [{}] to [{}]",
                 adminUser != null ? adminUser.getId() : "SYSTEM",

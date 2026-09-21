@@ -124,5 +124,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     );
 
     boolean existsByServiceId(Long serviceId);
+
+    long countByUserId(Long userId);
 }
 

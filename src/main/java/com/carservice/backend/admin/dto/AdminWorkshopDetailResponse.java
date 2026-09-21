@@ -31,6 +31,11 @@ public class AdminWorkshopDetailResponse {
     private WorkshopVerificationStatus verificationStatus;
     private Boolean isActive;
     private String statusReason;
+    private String openingTime;
+    private String closingTime;
+    private String workingDays;
+    private LocalDateTime approvedAt;
+    private Long approvedBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -335,5 +340,45 @@ public class AdminWorkshopDetailResponse {
 
     public void setCapabilities(List<AdminWorkshopCapabilityResponse> capabilities) {
         this.capabilities = capabilities;
+    }
+
+    public String getOpeningTime() {
+        return openingTime;
+    }
+
+    public void setOpeningTime(String openingTime) {
+        this.openingTime = openingTime;
+    }
+
+    public String getClosingTime() {
+        return closingTime;
+    }
+
+    public void setClosingTime(String closingTime) {
+        this.closingTime = closingTime;
+    }
+
+    public String getWorkingDays() {
+        return workingDays;
+    }
+
+    public void setWorkingDays(String workingDays) {
+        this.workingDays = workingDays;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public Long getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(Long approvedBy) {
+        this.approvedBy = approvedBy;
     }
 }

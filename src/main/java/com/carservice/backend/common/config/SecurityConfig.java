@@ -69,6 +69,10 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/api/v1/health",
                         "/api/v1/auth/register/customer",
+                        "/api/v1/auth/register/workshop",
+                        "/api/v1/workshops/register",
+                        "/api/v1/workshops/services",
+                        "/api/v1/services/public",
                         "/api/v1/auth/login",
                         "/api/v1/auth/refresh",
                         "/api/v1/auth/logout",
@@ -78,7 +82,7 @@ public class SecurityConfig {
                         "/api/v1/payments/razorpay/webhook",
                         "/api/v1/partner/payments/razorpay/webhook"
                 ).permitAll()
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .anyRequest().authenticated()
         )
 

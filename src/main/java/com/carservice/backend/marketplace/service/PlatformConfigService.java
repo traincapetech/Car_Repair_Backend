@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -49,15 +50,18 @@ public class PlatformConfigService {
     private final PlatformConfigRepository platformConfigRepository;
     private final PlatformConfigHistoryRepository platformConfigHistoryRepository;
     private final MarketplaceAuditService auditService;
+    private final com.carservice.backend.admin.service.AuditService systemAuditService;
 
     public PlatformConfigService(
             PlatformConfigRepository platformConfigRepository,
             PlatformConfigHistoryRepository platformConfigHistoryRepository,
-            MarketplaceAuditService auditService
+            MarketplaceAuditService auditService,
+            com.carservice.backend.admin.service.AuditService systemAuditService
     ) {
         this.platformConfigRepository = platformConfigRepository;
         this.platformConfigHistoryRepository = platformConfigHistoryRepository;
         this.auditService = auditService;
+        this.systemAuditService = systemAuditService;
     }
 
     @PostConstruct
@@ -388,6 +392,25 @@ public class PlatformConfigService {
                 "Platform configuration '" + savedConfig.getConfigKey() + "' updated from '" + oldValue + "' to '" + normalizedValue + "'. Reason: " + reason.trim(),
                 "{\"configKey\": \"" + savedConfig.getConfigKey() + "\", \"oldValue\": \"" + oldValue + "\", \"newValue\": \"" + normalizedValue + "\", \"reason\": \"" + reason.trim() + "\"}"
         );
+
+        if (systemAuditService != null) {
+            Map<String, Object> meta = new java.util.LinkedHashMap<>();
+            meta.put("reason", reason.trim());
+            meta.put("category", savedConfig.getCategory());
+            meta.put("dataType", savedConfig.getDataType());
+
+            systemAuditService.record(
+                    admin,
+                    "CONFIGURATION_UPDATED",
+                    "PLATFORM_CONFIG",
+                    savedConfig.getConfigKey(),
+                    "Platform configuration '" + savedConfig.getConfigKey() + "' updated from '" + oldValue + "' to '" + normalizedValue + "'",
+                    "SUCCESS",
+                    java.util.Map.of("key", savedConfig.getConfigKey(), "value", oldValue),
+                    java.util.Map.of("key", savedConfig.getConfigKey(), "value", normalizedValue),
+                    meta
+            );
+        }
 
         log.info("Successfully updated platform configuration '{}': {} -> {} (reason: {})",
                 targetKey, oldValue, normalizedValue, reason.trim());

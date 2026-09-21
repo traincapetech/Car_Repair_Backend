@@ -92,6 +92,62 @@ public class AdminWorkshopController {
         return ResponseEntity.ok(ApiResponse.success("Workshop verification status updated to " + request.getStatus(), updated));
     }
 
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<ApiResponse<AdminWorkshopDetailResponse>> approveWorkshop(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        User adminUser = (authentication != null && authentication.getPrincipal() instanceof User)
+                ? (User) authentication.getPrincipal()
+                : null;
+
+        AdminWorkshopDetailResponse updated = adminWorkshopService.approveWorkshop(id, adminUser);
+        return ResponseEntity.ok(ApiResponse.success("Workshop approved successfully", updated));
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<ApiResponse<AdminWorkshopDetailResponse>> rejectWorkshop(
+            @PathVariable Long id,
+            @RequestBody(required = false) WorkshopActionReasonRequest request,
+            Authentication authentication
+    ) {
+        User adminUser = (authentication != null && authentication.getPrincipal() instanceof User)
+                ? (User) authentication.getPrincipal()
+                : null;
+
+        String reason = (request != null && request.getReason() != null) ? request.getReason() : "Application rejected by administrator";
+        AdminWorkshopDetailResponse updated = adminWorkshopService.rejectWorkshop(id, reason, adminUser);
+        return ResponseEntity.ok(ApiResponse.success("Workshop rejected successfully", updated));
+    }
+
+    @PostMapping("/{id}/suspend")
+    public ResponseEntity<ApiResponse<AdminWorkshopDetailResponse>> suspendWorkshop(
+            @PathVariable Long id,
+            @RequestBody(required = false) WorkshopActionReasonRequest request,
+            Authentication authentication
+    ) {
+        User adminUser = (authentication != null && authentication.getPrincipal() instanceof User)
+                ? (User) authentication.getPrincipal()
+                : null;
+
+        String reason = (request != null && request.getReason() != null) ? request.getReason() : "Suspended by administrator";
+        AdminWorkshopDetailResponse updated = adminWorkshopService.suspendWorkshop(id, reason, adminUser);
+        return ResponseEntity.ok(ApiResponse.success("Workshop suspended successfully", updated));
+    }
+
+    @PostMapping("/{id}/reactivate")
+    public ResponseEntity<ApiResponse<AdminWorkshopDetailResponse>> reactivateWorkshop(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        User adminUser = (authentication != null && authentication.getPrincipal() instanceof User)
+                ? (User) authentication.getPrincipal()
+                : null;
+
+        AdminWorkshopDetailResponse updated = adminWorkshopService.reactivateWorkshop(id, adminUser);
+        return ResponseEntity.ok(ApiResponse.success("Workshop reactivated successfully", updated));
+    }
+
     @GetMapping("/{id}/capabilities")
     public ResponseEntity<ApiResponse<List<AdminWorkshopCapabilityResponse>>> getWorkshopCapabilities(@PathVariable Long id) {
         List<AdminWorkshopCapabilityResponse> capabilities = adminWorkshopService.getWorkshopCapabilities(id);

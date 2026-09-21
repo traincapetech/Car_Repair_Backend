@@ -35,9 +35,19 @@ public class GlobalExceptionHandler {
                                 .body(ApiResponse.error(exception.getReason() != null ? exception.getReason() : exception.getMessage()));
         }
 
+        @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+        public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(
+                        org.springframework.web.HttpRequestMethodNotSupportedException exception) {
+                return ResponseEntity
+                                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                                .body(ApiResponse.error("HTTP method " + exception.getMethod() + " is not supported for this endpoint"));
+        }
+
         @ExceptionHandler(Exception.class)
         public ResponseEntity<ApiResponse<Void>> handleException(
                         Exception exception) {
+                System.err.println("GLOBAL EXCEPTION HANDLER CAUGHT: " + exception.getClass().getName() + " -> " + exception.getMessage());
+                exception.printStackTrace();
                 return ResponseEntity
                                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                                 .body(

@@ -1,7 +1,13 @@
 package com.carservice.backend.user.enums;
 
 public enum UserRole {
-    CUSTOMER,
+    SUPER_ADMIN,
+    ADMIN,
+    OPERATIONS_ADMIN,
+    FINANCE_ADMIN,
+    SUPPORT_AGENT,
     PARTNER,
-    ADMIN
+    WORKSHOP_OWNER,
+    WORKSHOP_STAFF,
+    CUSTOMER
 }

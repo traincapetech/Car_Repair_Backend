@@ -70,10 +70,28 @@ public class Workshop {
     @Column(name = "status_reason", length = 500)
     private String statusReason;
 
+    @Column(name = "owner_name", length = 100)
+    private String ownerName;
+
+    @Column(name = "opening_time", length = 20)
+    private String openingTime;
+
+    @Column(name = "closing_time", length = 20)
+    private String closingTime;
+
+    @Column(name = "working_days", length = 100)
+    private String workingDays;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "approved_by")
+    private Long approvedBy;
+
     @OneToMany(mappedBy = "workshop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<WorkshopService> supportedServices = new ArrayList<>();
 
-    @OneToOne(mappedBy = "workshop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "workshop", fetch = FetchType.LAZY)
     private WorkshopWallet wallet;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -275,6 +293,54 @@ public class Workshop {
 
     public void setWallet(WorkshopWallet wallet) {
         this.wallet = wallet;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public String getOpeningTime() {
+        return openingTime;
+    }
+
+    public void setOpeningTime(String openingTime) {
+        this.openingTime = openingTime;
+    }
+
+    public String getClosingTime() {
+        return closingTime;
+    }
+
+    public void setClosingTime(String closingTime) {
+        this.closingTime = closingTime;
+    }
+
+    public String getWorkingDays() {
+        return workingDays;
+    }
+
+    public void setWorkingDays(String workingDays) {
+        this.workingDays = workingDays;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public Long getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(Long approvedBy) {
+        this.approvedBy = approvedBy;
     }
 
     public LocalDateTime getCreatedAt() {

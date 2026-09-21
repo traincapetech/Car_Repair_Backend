@@ -22,6 +22,8 @@ public interface ServiceCatalogRepository extends JpaRepository<ServiceCatalog, 
 
     Optional<ServiceCatalog> findByNameIgnoreCase(String name);
 
+    long countByIsActiveTrue();
+
     boolean existsByNameIgnoreCase(String name);
 
     boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
@@ -41,6 +43,35 @@ public interface ServiceCatalogRepository extends JpaRepository<ServiceCatalog, 
 
     @Modifying
     @Transactional
-    @Query("UPDATE ServiceCatalog s SET s.isActive = false WHERE s.name LIKE 'Active Booking Service%' OR s.name LIKE 'Inactive Booking Service%' OR s.name LIKE 'Toggle Service%' OR s.name LIKE 'Test Service%' OR s.name LIKE 'Admin Viewable%' OR s.name LIKE 'Active General Service%' OR s.name LIKE 'Brake Pad Replacement %' OR s.name LIKE 'Wheel Alignment %' OR s.name LIKE 'Periodic Maintenance %' OR s.name LIKE 'Advanced AC Service %' OR s.name LIKE 'Inactive Detailing %' OR s.name LIKE 'Existing Oil Service %' OR s.name LIKE 'AC Overhaul %' OR s.name LIKE 'AC Service %'")
+    @Query("""
+        UPDATE ServiceCatalog s SET s.isActive = false
+        WHERE s.name NOT IN (
+            'Basic Periodic Service',
+            'Standard Periodic Maintenance',
+            'Comprehensive Annual Service',
+            'Regular AC Service & Gas Top-Up',
+            'High Performance AC Overhaul',
+            'AC Cooling Diagnostic & Leak Test',
+            'Tyre Puncture & Stepney Assistance',
+            '3D Wheel Alignment & Dynamic Balancing',
+            'Complete Tyre Replacement & Fitment',
+            'Emergency Battery Jumpstart Assistance',
+            'Amaron / Exide OEM Battery Replacement',
+            'Front Brake Pads Replacement',
+            'Rear Brake Shoes & Drum Service',
+            'Complete Brake Fluid Flush & Bleeding',
+            'Deep Interior Spa & Sanitization',
+            'Exterior Foam Wash & 3M Carnauba Wax',
+            'Full Ceramic Coating (9H Armor)',
+            'OBD-II Computerized Engine Scan',
+            'Engine Carbon Cleaning & Throttle De-Carb',
+            'Engine Coolant Flush & Radiator Service',
+            'Emergency Fuel Assistance (Doorstep)',
+            'Pre-Purchase Comprehensive 100-Point Inspection',
+            'Front Bumper Denting & Painting (Single Panel)',
+            'Complete Clutch Overhaul & Replacement',
+            'Suspension Overhaul & Bushing Kit'
+        )
+    """)
     int deactivateTestArtifacts();
 }

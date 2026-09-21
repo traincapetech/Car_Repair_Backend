@@ -69,9 +69,19 @@ public class LeadOpportunityService {
                 .orElseThrow(() -> new ResourceNotFoundException("No workshop partner account found for user: " + currentUser.getEmail()));
     }
 
+    private void validateWorkshopApprovedAndActive(Workshop workshop) {
+        if (workshop.getVerificationStatus() != WorkshopVerificationStatus.VERIFIED || !Boolean.TRUE.equals(workshop.getIsActive())) {
+            throw new IllegalStateException("Workshop is not approved or active. Verification status: " + workshop.getVerificationStatus());
+        }
+    }
+
     @Transactional
     public List<LeadOpportunityResponse> getOpportunitiesForWorkshop(User currentUser, OpportunityStatus statusFilter) {
         Workshop workshop = resolveWorkshop(currentUser);
+
+        if (workshop.getVerificationStatus() != WorkshopVerificationStatus.VERIFIED || !Boolean.TRUE.equals(workshop.getIsActive())) {
+            return Collections.emptyList();
+        }
 
         List<LeadOpportunity> list;
         if (statusFilter != null) {
@@ -92,6 +102,7 @@ public class LeadOpportunityService {
 
         if (currentUser.getRole() != UserRole.ADMIN) {
             Workshop workshop = resolveWorkshop(currentUser);
+            validateWorkshopApprovedAndActive(workshop);
             if (!opportunity.getWorkshop().getId().equals(workshop.getId())) {
                 throw new IllegalArgumentException("You are not authorized to view this lead opportunity");
             }
@@ -123,6 +134,7 @@ public class LeadOpportunityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Opportunity not found with id: " + opportunityId));
 
         Workshop workshop = resolveWorkshop(currentUser);
+        validateWorkshopApprovedAndActive(workshop);
         if (!opportunity.getWorkshop().getId().equals(workshop.getId())) {
             throw new IllegalArgumentException("You are not authorized to accept this lead opportunity");
         }
@@ -154,6 +166,7 @@ public class LeadOpportunityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Opportunity not found with id: " + opportunityId));
 
         Workshop workshop = resolveWorkshop(currentUser);
+        validateWorkshopApprovedAndActive(workshop);
         if (!opportunity.getWorkshop().getId().equals(workshop.getId())) {
             throw new IllegalArgumentException("You are not authorized to pay for this lead opportunity");
         }
@@ -207,7 +220,10 @@ public class LeadOpportunityService {
 
         // 4. Update ServiceRequest (Atomic Claim)
         ServiceRequest request = opportunity.getServiceRequest();
-        serviceRequestRepository.claimServiceRequest(request.getId(), workshop, ServiceRequestStatus.ACCEPTED);
+        int claimedRows = serviceRequestRepository.claimServiceRequest(request.getId(), workshop, ServiceRequestStatus.ACCEPTED);
+        if (claimedRows == 0) {
+            throw new IllegalStateException("Service request has already been claimed or is no longer open for claim");
+        }
         request.setAssignedWorkshop(workshop);
         request.setStatus(ServiceRequestStatus.ACCEPTED);
 
@@ -259,6 +275,7 @@ public class LeadOpportunityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Opportunity not found with id: " + opportunityId));
 
         Workshop workshop = resolveWorkshop(currentUser);
+        validateWorkshopApprovedAndActive(workshop);
         if (!opportunity.getWorkshop().getId().equals(workshop.getId())) {
             throw new IllegalArgumentException("You are not authorized to pay for this lead opportunity");
         }
@@ -311,7 +328,10 @@ public class LeadOpportunityService {
 
         // Update Service Request (Atomic Claim)
         ServiceRequest request = opportunity.getServiceRequest();
-        serviceRequestRepository.claimServiceRequest(request.getId(), workshop, ServiceRequestStatus.ACCEPTED);
+        int claimedRows = serviceRequestRepository.claimServiceRequest(request.getId(), workshop, ServiceRequestStatus.ACCEPTED);
+        if (claimedRows == 0) {
+            throw new IllegalStateException("Service request has already been claimed or is no longer open for claim");
+        }
         request.setAssignedWorkshop(workshop);
         request.setStatus(ServiceRequestStatus.ACCEPTED);
 
@@ -371,6 +391,7 @@ public class LeadOpportunityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Opportunity not found with id: " + opportunityId));
 
         Workshop workshop = resolveWorkshop(currentUser);
+        validateWorkshopApprovedAndActive(workshop);
         if (!opportunity.getWorkshop().getId().equals(workshop.getId())) {
             throw new IllegalArgumentException("You are not authorized to transfer this lead opportunity");
         }

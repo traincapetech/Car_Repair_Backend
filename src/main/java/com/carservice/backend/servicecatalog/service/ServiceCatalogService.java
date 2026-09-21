@@ -22,7 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.carservice.backend.admin.service.AuditService;
+
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ServiceCatalogService {
@@ -34,19 +37,22 @@ public class ServiceCatalogService {
     private final BookingRepository bookingRepository;
     private final ServiceRequestItemRepository serviceRequestItemRepository;
     private final WorkshopServiceRepository workshopServiceRepository;
+    private final AuditService auditService;
 
     public ServiceCatalogService(
             ServiceCatalogRepository serviceCatalogRepository,
             BookingServiceRepository bookingServiceRepository,
             BookingRepository bookingRepository,
             ServiceRequestItemRepository serviceRequestItemRepository,
-            WorkshopServiceRepository workshopServiceRepository
+            WorkshopServiceRepository workshopServiceRepository,
+            AuditService auditService
     ) {
         this.serviceCatalogRepository = serviceCatalogRepository;
         this.bookingServiceRepository = bookingServiceRepository;
         this.bookingRepository = bookingRepository;
         this.serviceRequestItemRepository = serviceRequestItemRepository;
         this.workshopServiceRepository = workshopServiceRepository;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -75,6 +81,18 @@ public class ServiceCatalogService {
         service.validateDiscount();
 
         ServiceCatalog saved = serviceCatalogRepository.save(service);
+
+        auditService.record(
+                "SERVICE_CREATED",
+                "SERVICE_CATALOG",
+                String.valueOf(saved.getId()),
+                "Created service catalog package '" + saved.getName() + "' (" + saved.getCategory() + ")",
+                "SUCCESS",
+                null,
+                saved,
+                Map.of("name", saved.getName(), "category", saved.getCategory().name(), "basePrice", saved.getBasePrice())
+        );
+
         log.info("Service catalog package created: ID {}, Name '{}', Category {}, Base Price {}, Final Price {}",
                 saved.getId(), saved.getName(), saved.getCategory(), saved.getBasePrice(), saved.calculateFinalPrice());
         return ServiceCatalogResponse.fromEntity(saved);
@@ -178,7 +196,26 @@ public class ServiceCatalogService {
         }
         service.validateDiscount();
 
+        Map<String, Object> beforeState = Map.of(
+                "name", service.getName(),
+                "basePrice", service.getBasePrice() != null ? service.getBasePrice() : 0,
+                "category", service.getCategory() != null ? service.getCategory().name() : "",
+                "isActive", Boolean.TRUE.equals(service.getIsActive())
+        );
+
         ServiceCatalog updated = serviceCatalogRepository.save(service);
+
+        auditService.record(
+                "SERVICE_UPDATED",
+                "SERVICE_CATALOG",
+                String.valueOf(updated.getId()),
+                "Updated service catalog package '" + updated.getName() + "'",
+                "SUCCESS",
+                beforeState,
+                updated,
+                Map.of("name", updated.getName(), "category", updated.getCategory().name(), "basePrice", updated.getBasePrice())
+        );
+
         log.info("Updated service ID {}: newPrice={}, newDiscount={}:{}, finalPrice={}",
                 id, updated.getBasePrice(), updated.getDiscountType(), updated.getDiscountValue(), updated.calculateFinalPrice());
         return ServiceCatalogResponse.fromEntity(updated);
@@ -191,6 +228,18 @@ public class ServiceCatalogService {
 
         service.setIsActive(true);
         ServiceCatalog updated = serviceCatalogRepository.save(service);
+
+        auditService.record(
+                "SERVICE_ACTIVATED",
+                "SERVICE_CATALOG",
+                String.valueOf(updated.getId()),
+                "Activated service catalog package '" + updated.getName() + "'",
+                "SUCCESS",
+                Map.of("id", id, "isActive", false),
+                Map.of("id", id, "isActive", true),
+                Map.of("name", updated.getName())
+        );
+
         log.info("Service ID {} ('{}') activated by admin.", id, service.getName());
         return ServiceCatalogResponse.fromEntity(updated);
     }
@@ -202,6 +251,18 @@ public class ServiceCatalogService {
 
         service.setIsActive(false);
         ServiceCatalog updated = serviceCatalogRepository.save(service);
+
+        auditService.record(
+                "SERVICE_DEACTIVATED",
+                "SERVICE_CATALOG",
+                String.valueOf(updated.getId()),
+                "Deactivated service catalog package '" + updated.getName() + "'",
+                "SUCCESS",
+                Map.of("id", id, "isActive", true),
+                Map.of("id", id, "isActive", false),
+                Map.of("name", updated.getName())
+        );
+
         log.info("Service ID {} ('{}') deactivated by admin.", id, service.getName());
         return ServiceCatalogResponse.fromEntity(updated);
     }
@@ -224,6 +285,17 @@ public class ServiceCatalogService {
                     "Cannot delete service '" + service.getName() + "' because it is referenced by historical bookings or service requests. Please deactivate the service instead."
             );
         }
+
+        auditService.record(
+                "SERVICE_DELETED",
+                "SERVICE_CATALOG",
+                String.valueOf(id),
+                "Permanently deleted service catalog package '" + service.getName() + "'",
+                "SUCCESS",
+                Map.of("id", id, "name", service.getName(), "category", service.getCategory().name()),
+                null,
+                Map.of("name", service.getName())
+        );
 
         serviceCatalogRepository.delete(service);
         log.info("Service ID {} ('{}') permanently deleted by admin.", id, service.getName());

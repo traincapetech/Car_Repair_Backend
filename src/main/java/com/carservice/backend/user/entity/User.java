@@ -1,6 +1,9 @@
 package com.carservice.backend.user.entity;
 
+import com.carservice.backend.user.enums.Permission;
+import com.carservice.backend.user.enums.RolePermissions;
 import com.carservice.backend.user.enums.UserRole;
+import com.carservice.backend.user.enums.UserStatus;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,6 +36,10 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private UserStatus status;
 
     @Column(nullable = false)
     private Boolean isActive = true;
@@ -103,12 +110,33 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    public UserStatus getStatus() {
+        if (status != null) {
+            return status;
+        }
+        return Boolean.TRUE.equals(isActive) ? UserStatus.ACTIVE : UserStatus.INACTIVE;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+        this.isActive = (status == UserStatus.ACTIVE);
+    }
+
     public Boolean getIsActive() {
         return isActive;
     }
 
     public void setIsActive(Boolean active) {
-        isActive = active;
+        this.isActive = active;
+        if (Boolean.TRUE.equals(active)) {
+            if (this.status == null || this.status == UserStatus.INACTIVE) {
+                this.status = UserStatus.ACTIVE;
+            }
+        } else {
+            if (this.status == null || this.status == UserStatus.ACTIVE) {
+                this.status = UserStatus.INACTIVE;
+            }
+        }
     }
 
     public LocalDateTime getCreatedAt() {
@@ -124,7 +152,29 @@ public class User implements UserDetails {
         if (role == null) {
             return List.of();
         }
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        List<GrantedAuthority> authorities = new java.util.ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+
+        // SUPER_ADMIN automatically satisfies all ADMIN roles
+        if (role == UserRole.SUPER_ADMIN) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_OPERATIONS_ADMIN"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_FINANCE_ADMIN"));
+        }
+
+        // WORKSHOP_OWNER aliases PARTNER and vice versa
+        if (role == UserRole.WORKSHOP_OWNER) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_PARTNER"));
+        } else if (role == UserRole.PARTNER) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_WORKSHOP_OWNER"));
+        }
+
+        // Add granular permission authorities
+        for (Permission perm : RolePermissions.getPermissionsForRole(role)) {
+            authorities.add(new SimpleGrantedAuthority(perm.name()));
+        }
+
+        return authorities;
     }
 
     @Override
@@ -139,7 +189,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return status != UserStatus.SUSPENDED;
     }
 
     @Override
@@ -149,6 +199,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return Boolean.TRUE.equals(isActive);
+        return (status == null || status == UserStatus.ACTIVE) && Boolean.TRUE.equals(isActive);
     }
 }

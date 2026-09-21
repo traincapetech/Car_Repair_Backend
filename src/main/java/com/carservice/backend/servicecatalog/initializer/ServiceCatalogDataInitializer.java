@@ -9,6 +9,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@ConditionalOnProperty(name = "service-catalog.seeding.enabled", havingValue = "true", matchIfMissing = false)
 public class ServiceCatalogDataInitializer implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceCatalogDataInitializer.class);
@@ -40,13 +42,7 @@ public class ServiceCatalogDataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         try {
-            // 1. Deactivate old test artifact services so customer catalog is clean
-            int deactivated = serviceCatalogRepository.deactivateTestArtifacts();
-            if (deactivated > 0) {
-                log.info("Deactivated {} test artifact services from customer catalog.", deactivated);
-            }
-
-            // 2. Load authentic Indian car services from JSON
+            // Load authentic Indian car services from JSON when explicitly enabled
             Resource resource = resourceLoader.getResource("classpath:data/indian_service_catalog.json");
             if (!resource.exists()) {
                 log.warn("Indian service catalog JSON resource not found at classpath:data/indian_service_catalog.json");
