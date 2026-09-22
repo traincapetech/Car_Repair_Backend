@@ -24,6 +24,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByIdAndRole(Long id, UserRole role);
 
+    java.util.List<User> findByRole(UserRole role);
+
+    java.util.List<User> findByRoleIn(Collection<UserRole> roles);
+
     long countByRole(UserRole role);
 
     long countByStatus(UserStatus status);
@@ -107,4 +111,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
         @Param("search") String search,
         Pageable pageable
     );
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = com.carservice.backend.user.enums.UserRole.CUSTOMER AND (:from IS NULL OR u.createdAt >= :from) AND (:to IS NULL OR u.createdAt <= :to)")
+    long countCustomersByDateRange(@Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = com.carservice.backend.user.enums.UserRole.CUSTOMER AND (:isActive IS NULL OR u.isActive = :isActive) AND (:from IS NULL OR u.createdAt >= :from) AND (:to IS NULL OR u.createdAt <= :to)")
+    long countCustomersByActiveAndDateRange(@Param("isActive") Boolean isActive, @Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to);
+
+    @Query(value = "SELECT DATE(u.created_at) as reg_date, COUNT(*) as cnt FROM users u WHERE u.role = 'CUSTOMER' AND (:from IS NULL OR u.created_at >= :from) AND (:to IS NULL OR u.created_at <= :to) GROUP BY DATE(u.created_at) ORDER BY reg_date ASC", nativeQuery = true)
+    java.util.List<Object[]> countCustomerRegistrationsByDayNative(@Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to);
 }

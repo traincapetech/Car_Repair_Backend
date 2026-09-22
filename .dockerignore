@@ -1,0 +1,13 @@
+target/
+.git/
+.gitignore
+.gitattributes
+*.log
+hs_err_pid*
+.mvn/
+mvnw
+mvnw.cmd
+.DS_Store
+.env
+.env.local
+.env.example

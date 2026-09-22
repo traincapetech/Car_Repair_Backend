@@ -60,4 +60,75 @@ public interface WorkshopJobRepository extends JpaRepository<WorkshopJob, Long> 
             @Param("status") WorkshopJobStatus status,
             org.springframework.data.domain.Pageable pageable
     );
+
+    long countByStatus(WorkshopJobStatus status);
+
+    long countByStatusIn(java.util.Collection<WorkshopJobStatus> statuses);
+
+    @Query("""
+        SELECT j FROM WorkshopJob j
+        JOIN FETCH j.workshop w
+        JOIN FETCH j.serviceRequest sr
+        JOIN FETCH sr.user u
+        JOIN FETCH sr.vehicle v
+        LEFT JOIN FETCH sr.booking b
+        LEFT JOIN FETCH j.opportunity o
+        WHERE j.id = :id
+    """)
+    Optional<WorkshopJob> findByIdWithDetails(@Param("id") Long id);
+
+    @Query(value = """
+        SELECT j FROM WorkshopJob j
+        JOIN FETCH j.workshop w
+        JOIN FETCH j.serviceRequest sr
+        JOIN FETCH sr.user u
+        JOIN FETCH sr.vehicle v
+        LEFT JOIN FETCH sr.booking b
+        WHERE (:search IS NULL OR :search = '' OR
+               LOWER(j.jobReference) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               (sr.bookingReference IS NOT NULL AND LOWER(sr.bookingReference) LIKE LOWER(CONCAT('%', :search, '%'))) OR
+               LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(u.phone) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(w.businessName) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(v.make) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(v.model) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(v.registrationNumber) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND (:status IS NULL OR j.status = :status)
+          AND (:workshopId IS NULL OR j.workshop.id = :workshopId)
+          AND (:customerId IS NULL OR sr.user.id = :customerId)
+          AND (:startDate IS NULL OR j.createdAt >= :startDate)
+          AND (:endDate IS NULL OR j.createdAt <= :endDate)
+    """,
+    countQuery = """
+        SELECT COUNT(j) FROM WorkshopJob j
+        JOIN j.workshop w
+        JOIN j.serviceRequest sr
+        JOIN sr.user u
+        JOIN sr.vehicle v
+        WHERE (:search IS NULL OR :search = '' OR
+               LOWER(j.jobReference) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               (sr.bookingReference IS NOT NULL AND LOWER(sr.bookingReference) LIKE LOWER(CONCAT('%', :search, '%'))) OR
+               LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(u.phone) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(w.businessName) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(v.make) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(v.model) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(v.registrationNumber) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND (:status IS NULL OR j.status = :status)
+          AND (:workshopId IS NULL OR j.workshop.id = :workshopId)
+          AND (:customerId IS NULL OR sr.user.id = :customerId)
+          AND (:startDate IS NULL OR j.createdAt >= :startDate)
+          AND (:endDate IS NULL OR j.createdAt <= :endDate)
+    """)
+    org.springframework.data.domain.Page<WorkshopJob> findWorkshopJobsWithFilter(
+            @Param("search") String search,
+            @Param("status") WorkshopJobStatus status,
+            @Param("workshopId") Long workshopId,
+            @Param("customerId") Long customerId,
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDate") java.time.LocalDateTime endDate,
+            org.springframework.data.domain.Pageable pageable
+    );
 }

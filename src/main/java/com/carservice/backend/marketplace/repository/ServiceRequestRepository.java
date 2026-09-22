@@ -99,5 +99,14 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
     long countByStatusIn(Collection<ServiceRequestStatus> statuses);
 
     long countByUserId(Long userId);
+
+    @Query("SELECT COUNT(sr) FROM ServiceRequest sr WHERE (:from IS NULL OR sr.createdAt >= :from) AND (:to IS NULL OR sr.createdAt <= :to) AND (:status IS NULL OR sr.status = :status) AND (:workshopId IS NULL OR (sr.assignedWorkshop IS NOT NULL AND sr.assignedWorkshop.id = :workshopId))")
+    long countServiceRequestsFiltered(@Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to, @Param("status") ServiceRequestStatus status, @Param("workshopId") Long workshopId);
+
+    @Query("SELECT sr.status, COUNT(sr) FROM ServiceRequest sr WHERE (:from IS NULL OR sr.createdAt >= :from) AND (:to IS NULL OR sr.createdAt <= :to) AND (:workshopId IS NULL OR (sr.assignedWorkshop IS NOT NULL AND sr.assignedWorkshop.id = :workshopId)) GROUP BY sr.status")
+    java.util.List<Object[]> countServiceRequestsGroupedByStatus(@Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to, @Param("workshopId") Long workshopId);
+
+    @Query(value = "SELECT DATE(sr.created_at) as req_date, COUNT(*) as cnt FROM service_requests sr WHERE (:from IS NULL OR sr.created_at >= :from) AND (:to IS NULL OR sr.created_at <= :to) AND (:workshopId IS NULL OR sr.assigned_workshop_id = :workshopId) GROUP BY DATE(sr.created_at) ORDER BY req_date ASC", nativeQuery = true)
+    java.util.List<Object[]> countServiceRequestsByDayNative(@Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to, @Param("workshopId") Long workshopId);
 }
 

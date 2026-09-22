@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 public class LeadOpportunityService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LeadOpportunityService.class);
+
     private final LeadOpportunityRepository leadOpportunityRepository;
     private final LeadPaymentRepository leadPaymentRepository;
     private final WorkshopRepository workshopRepository;
@@ -37,6 +39,7 @@ public class LeadOpportunityService {
     private final WorkshopPaymentRepository workshopPaymentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final com.carservice.backend.marketplace.repository.WorkshopJobRepository workshopJobRepository;
+    private final com.carservice.backend.common.notification.NotificationService notificationService;
 
     public LeadOpportunityService(
             LeadOpportunityRepository leadOpportunityRepository,
@@ -49,7 +52,8 @@ public class LeadOpportunityService {
             MarketplaceAuditService auditService,
             WorkshopPaymentRepository workshopPaymentRepository,
             ApplicationEventPublisher eventPublisher,
-            com.carservice.backend.marketplace.repository.WorkshopJobRepository workshopJobRepository
+            com.carservice.backend.marketplace.repository.WorkshopJobRepository workshopJobRepository,
+            com.carservice.backend.common.notification.NotificationService notificationService
     ) {
         this.leadOpportunityRepository = leadOpportunityRepository;
         this.leadPaymentRepository = leadPaymentRepository;
@@ -62,6 +66,7 @@ public class LeadOpportunityService {
         this.workshopPaymentRepository = workshopPaymentRepository;
         this.eventPublisher = eventPublisher;
         this.workshopJobRepository = workshopJobRepository;
+        this.notificationService = notificationService;
     }
 
     private Workshop resolveWorkshop(User currentUser) {
@@ -266,6 +271,23 @@ public class LeadOpportunityService {
                 null
         );
 
+        // Notify customer that their booking was accepted and assigned
+        try {
+            notificationService.notifyCustomer(
+                    request.getUser().getId(),
+                    "BOOKING_ACCEPTED",
+                    "Workshop Confirmed",
+                    workshop.getBusinessName() + " has accepted your service booking " + request.getRequestReference() + ". The technician will be prepared.",
+                    Map.of(
+                            "workshopName", workshop.getBusinessName(),
+                            "requestReference", request.getRequestReference(),
+                            "requestId", request.getId()
+                    )
+            );
+        } catch (Exception ex) {
+            log.warn("Failed to dispatch customer notification on opportunity claim: {}", ex.getMessage());
+        }
+
         return mapToResponse(saved);
     }
 
@@ -372,6 +394,23 @@ public class LeadOpportunityService {
                 "Service request " + request.getRequestReference() + " assigned to " + workshop.getBusinessName(),
                 null
         );
+
+        // Notify customer that their booking was accepted and assigned
+        try {
+            notificationService.notifyCustomer(
+                    request.getUser().getId(),
+                    "BOOKING_ACCEPTED",
+                    "Workshop Confirmed",
+                    workshop.getBusinessName() + " has accepted your service booking " + request.getRequestReference() + ". The technician will be prepared.",
+                    Map.of(
+                            "workshopName", workshop.getBusinessName(),
+                            "requestReference", request.getRequestReference(),
+                            "requestId", request.getId()
+                    )
+            );
+        } catch (Exception ex) {
+            log.warn("Failed to dispatch customer notification on direct opportunity claim: {}", ex.getMessage());
+        }
 
         return mapToResponse(saved);
     }

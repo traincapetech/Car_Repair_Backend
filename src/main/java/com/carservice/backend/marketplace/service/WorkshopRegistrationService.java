@@ -43,6 +43,7 @@ public class WorkshopRegistrationService {
     private final AuditService auditService;
     private final MarketplaceAuditService marketplaceAuditService;
     private final PlatformConfigService platformConfigService;
+    private final com.carservice.backend.common.notification.NotificationService notificationService;
 
     public WorkshopRegistrationService(
             UserRepository userRepository,
@@ -53,7 +54,8 @@ public class WorkshopRegistrationService {
             PasswordEncoder passwordEncoder,
             AuditService auditService,
             MarketplaceAuditService marketplaceAuditService,
-            PlatformConfigService platformConfigService
+            PlatformConfigService platformConfigService,
+            com.carservice.backend.common.notification.NotificationService notificationService
     ) {
         this.userRepository = userRepository;
         this.workshopRepository = workshopRepository;
@@ -64,6 +66,7 @@ public class WorkshopRegistrationService {
         this.auditService = auditService;
         this.marketplaceAuditService = marketplaceAuditService;
         this.platformConfigService = platformConfigService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -205,6 +208,19 @@ public class WorkshopRegistrationService {
 
         log.info("Workshop self-registration successful for ID [{}] - {}. Status: PENDING",
                 savedWorkshop.getId(), savedWorkshop.getBusinessName());
+
+        try {
+            notificationService.notifyAdmin(
+                    com.carservice.backend.common.notification.enums.NotificationType.WORKSHOP_REGISTERED,
+                    "New Workshop Registration",
+                    "Workshop [" + savedWorkshop.getBusinessName() + "] has registered and awaits administrative verification.",
+                    "WORKSHOP",
+                    savedWorkshop.getId(),
+                    metadata
+            );
+        } catch (Exception e) {
+            log.warn("Failed to dispatch admin notification for workshop registration: {}", e.getMessage());
+        }
 
         return new WorkshopRegistrationResponse(
                 savedWorkshop.getId(),

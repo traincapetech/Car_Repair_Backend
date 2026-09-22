@@ -339,6 +339,29 @@ public class ServiceRequestService {
                     "Matched " + matchedWorkshops.size() + " workshops for service request " + savedRequest.getRequestReference(),
                     "{\"matchedCount\": " + matchedWorkshops.size() + "}"
             );
+
+            // ADMIN 9 Requirement 14: Restrictive dispatch to matched nearby workshops only
+            notificationService.notifyNearbyWorkshopsOfBooking(
+                    matchedWorkshops,
+                    savedRequest.getId(),
+                    savedRequest.getRequestReference(),
+                    savedRequest.getCity(),
+                    currentFee
+            );
+
+            // Notify Customer of Booking Received & Dispatched
+            notificationService.notifyCustomer(
+                    booking.getUser().getId(),
+                    "BOOKING_CREATED",
+                    "Booking Received & Dispatched",
+                    "Your service booking #" + booking.getBookingReference() + " has been received and dispatched to " + matchedWorkshops.size() + " nearby certified workshops.",
+                    Map.of(
+                            "bookingReference", booking.getBookingReference(),
+                            "date", booking.getBookingDate().toString(),
+                            "slot", booking.getTimeSlot(),
+                            "amount", booking.getTotalAmount()
+                    )
+            );
         }
 
         return savedRequest;

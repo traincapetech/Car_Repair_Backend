@@ -46,6 +46,8 @@ public class AdminWorkshopService {
     private final WalletService walletService;
     private final WorkshopJobService workshopJobService;
     private final AuditService auditService;
+    private final com.carservice.backend.common.notification.NotificationService notificationService;
+    private final com.carservice.backend.common.email.BrevoEmailService emailService;
 
     public AdminWorkshopService(
             WorkshopRepository workshopRepository,
@@ -60,7 +62,9 @@ public class AdminWorkshopService {
             MarketplaceAuditService marketplaceAuditService,
             WalletService walletService,
             WorkshopJobService workshopJobService,
-            AuditService auditService
+            AuditService auditService,
+            com.carservice.backend.common.notification.NotificationService notificationService,
+            com.carservice.backend.common.email.BrevoEmailService emailService
     ) {
         this.workshopRepository = workshopRepository;
         this.workshopServiceRepository = workshopServiceRepository;
@@ -75,6 +79,8 @@ public class AdminWorkshopService {
         this.walletService = walletService;
         this.workshopJobService = workshopJobService;
         this.auditService = auditService;
+        this.notificationService = notificationService;
+        this.emailService = emailService;
     }
 
     @Transactional(readOnly = true)
@@ -408,8 +414,48 @@ public class AdminWorkshopService {
         String specificAction;
         if (targetStatus == WorkshopVerificationStatus.VERIFIED) {
             specificAction = (currentStatus == WorkshopVerificationStatus.SUSPENDED) ? "WORKSHOP_REACTIVATED" : "WORKSHOP_APPROVED";
+
+            // Dispatch notification and email to workshop partner
+            if (workshop.getUser() != null) {
+                try {
+                    notificationService.sendNotification(
+                            workshop.getUser().getId(),
+                            "PARTNER",
+                            com.carservice.backend.common.notification.enums.NotificationType.WORKSHOP_APPROVED,
+                            "Workshop Application Approved",
+                            "Congratulations! Your workshop [" + workshop.getBusinessName() + "] has been approved. You can now claim nearby service requests.",
+                            "WORKSHOP",
+                            workshop.getId(),
+                            Map.of("workshopId", workshop.getId(), "businessName", workshop.getBusinessName())
+                    );
+                    String email = workshop.getEmail() != null ? workshop.getEmail() : workshop.getUser().getEmail();
+                    emailService.sendWorkshopApprovalEmail(email, workshop.getBusinessName());
+                } catch (Exception ex) {
+                    log.warn("Failed to dispatch workshop approval notification/email: {}", ex.getMessage());
+                }
+            }
         } else if (targetStatus == WorkshopVerificationStatus.REJECTED) {
             specificAction = "WORKSHOP_REJECTED";
+
+            // Dispatch rejection notification and email to workshop partner
+            if (workshop.getUser() != null) {
+                try {
+                    notificationService.sendNotification(
+                            workshop.getUser().getId(),
+                            "PARTNER",
+                            com.carservice.backend.common.notification.enums.NotificationType.WORKSHOP_REJECTED,
+                            "Workshop Application Status",
+                            "Your workshop application for [" + workshop.getBusinessName() + "] was rejected. Reason: " + (reason != null ? reason : "Did not meet partner criteria"),
+                            "WORKSHOP",
+                            workshop.getId(),
+                            Map.of("workshopId", workshop.getId(), "reason", reason != null ? reason : "")
+                    );
+                    String email = workshop.getEmail() != null ? workshop.getEmail() : workshop.getUser().getEmail();
+                    emailService.sendWorkshopRejectionEmail(email, workshop.getBusinessName(), reason);
+                } catch (Exception ex) {
+                    log.warn("Failed to dispatch workshop rejection notification/email: {}", ex.getMessage());
+                }
+            }
         } else if (targetStatus == WorkshopVerificationStatus.SUSPENDED) {
             specificAction = "WORKSHOP_SUSPENDED";
         } else {
