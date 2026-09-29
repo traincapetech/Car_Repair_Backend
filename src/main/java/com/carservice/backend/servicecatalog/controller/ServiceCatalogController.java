@@ -31,14 +31,16 @@ public class ServiceCatalogController {
             Authentication authentication,
             @RequestParam(required = false) Boolean activeOnly
     ) {
-        User currentUser = (User) authentication.getPrincipal();
-
         List<ServiceCatalogResponse> responses;
-        if (UserRole.ADMIN.equals(currentUser.getRole())) {
-            if (Boolean.TRUE.equals(activeOnly)) {
-                responses = serviceCatalogService.getActiveServices();
+        if (authentication != null && authentication.getPrincipal() instanceof User currentUser) {
+            if (UserRole.ADMIN.equals(currentUser.getRole())) {
+                if (Boolean.TRUE.equals(activeOnly)) {
+                    responses = serviceCatalogService.getActiveServices();
+                } else {
+                    responses = serviceCatalogService.getAllServices();
+                }
             } else {
-                responses = serviceCatalogService.getAllServices();
+                responses = serviceCatalogService.getActiveServices();
             }
         } else {
             responses = serviceCatalogService.getActiveServices();
@@ -54,7 +56,7 @@ public class ServiceCatalogController {
             Authentication authentication,
             @PathVariable Long id
     ) {
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = (authentication != null && authentication.getPrincipal() instanceof User user) ? user : null;
         ServiceCatalogResponse response = serviceCatalogService.getServiceForUser(currentUser, id);
 
         return ResponseEntity.ok(
